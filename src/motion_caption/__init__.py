@@ -6,9 +6,10 @@ for the design contract.
 
 from __future__ import annotations
 
-from motion_caption import easing, models, segmentation, themes, typography
+from motion_caption import easing, emphasis, models, reading, segmentation, themes, typography
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.easing import EasingKind, EasingSpec, compile_spec
+from motion_caption.emphasis import apply_emphasis, importance_to_mode
 from motion_caption.models import (
     Box,
     Color,
@@ -35,6 +36,7 @@ from motion_caption.models import (
     Word,
     WordTimestamp,
 )
+from motion_caption.reading import ReadingStats, adjust_segments, analyze, difficulty_of
 from motion_caption.registry import Registry
 from motion_caption.segmentation import (
     SegmentationConfig,
@@ -87,6 +89,7 @@ __all__ = [
     "Padding",
     "Point",
     "PropertyKind",
+    "ReadingStats",
     "Region",
     "RegionTimeline",
     "Registry",
@@ -106,11 +109,18 @@ __all__ = [
     "Unit",
     "Word",
     "WordTimestamp",
+    "adjust_segments",
+    "analyze",
+    "apply_emphasis",
     "builtin_themes",
     "compile_spec",
+    "difficulty_of",
     "easing",
+    "emphasis",
+    "importance_to_mode",
     "load_theme",
     "models",
+    "reading",
     "resolve_theme",
     "segmentation",
     "segment_transcript",
