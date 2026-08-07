@@ -6,7 +6,7 @@ for the design contract.
 
 from __future__ import annotations
 
-from motion_caption import models
+from motion_caption import models, typography
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.models import (
     Box,
@@ -30,11 +30,21 @@ from motion_caption.models import (
     WordTimestamp,
 )
 from motion_caption.registry import Registry
+from motion_caption.typography import (
+    BackgroundSpec,
+    FontManager,
+    FontRef,
+    FontStack,
+    MeasuredBlock,
+    TextMeasurer,
+    TextStyle,
+)
 
 __version__ = "0.1.0"
 
 __all__ = [
     "AspectRatio",
+    "BackgroundSpec",
     "Box",
     "Canvas",
     "Color",
@@ -43,7 +53,11 @@ __all__ = [
     "FillSpec",
     "GradientFill",
     "GradientStop",
+    "FontManager",
+    "FontRef",
+    "FontStack",
     "Length",
+    "MeasuredBlock",
     "Padding",
     "Point",
     "Registry",
@@ -53,9 +67,12 @@ __all__ = [
     "Segment",
     "Size",
     "StandardResolution",
+    "TextMeasurer",
+    "TextStyle",
     "Transcript",
     "Unit",
     "Word",
     "WordTimestamp",
     "models",
+    "typography",
 ]
