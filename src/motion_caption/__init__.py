@@ -7,6 +7,7 @@ for the design contract.
 from __future__ import annotations
 
 from motion_caption import (
+    animations,
     easing,
     emphasis,
     layout,
@@ -16,6 +17,14 @@ from motion_caption import (
     segmentation,
     themes,
     typography,
+)
+from motion_caption.animations import (
+    ANIMATION_REGISTRY,
+    AnimationConfig,
+    WordItem,
+    animate_segment,
+    animate_word,
+    build_word_items,
 )
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.easing import EasingKind, EasingSpec, compile_spec
@@ -88,6 +97,8 @@ __version__ = "0.1.0"
 
 __all__ = [
     "AnimationPersonality",
+    "ANIMATION_REGISTRY",
+    "AnimationConfig",
     "AspectRatio",
     "BackgroundSpec",
     "Box",
@@ -139,11 +150,16 @@ __all__ = [
     "Transcript",
     "Unit",
     "Word",
+    "WordItem",
     "WordTimestamp",
     "adjust_segments",
     "analyze",
+    "animate_segment",
+    "animate_word",
+    "animations",
     "apply_emphasis",
     "avoid_faces",
+    "build_word_items",
     "builtin_themes",
     "compile_spec",
     "difficulty_of",

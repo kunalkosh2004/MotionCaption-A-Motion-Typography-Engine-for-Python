@@ -1,0 +1,53 @@
+"""Animation subsystem: theme-driven per-word keyframe timelines."""
+
+from motion_caption.animations.engine import (
+    ANIMATION_REGISTRY,
+    AnimationConfig,
+    WordItem,
+    animate_segment,
+    animate_word,
+    build_word_items,
+)
+from motion_caption.animations.templates import (
+    TemplateContext,
+    blur,
+    bounce,
+    elastic,
+    fade,
+    glow,
+    karaoke,
+    overshoot,
+    pop,
+    pulse,
+    ripple,
+    rotate,
+    scale,
+    slide,
+    spring,
+    static,
+)
+
+__all__ = [
+    "ANIMATION_REGISTRY",
+    "AnimationConfig",
+    "TemplateContext",
+    "WordItem",
+    "animate_segment",
+    "animate_word",
+    "blur",
+    "bounce",
+    "build_word_items",
+    "elastic",
+    "fade",
+    "glow",
+    "karaoke",
+    "overshoot",
+    "pop",
+    "pulse",
+    "ripple",
+    "rotate",
+    "scale",
+    "slide",
+    "spring",
+    "static",
+]

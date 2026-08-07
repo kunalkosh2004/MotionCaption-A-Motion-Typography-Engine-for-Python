@@ -90,6 +90,7 @@ class ResolvedTheme:
     base_style: TextStyle
     emphasis: dict[EmphasisMode, EmphasisAppearance]
     easings: dict[str, EasingFunction]
+    easing_specs: dict[str, EasingSpec]
 
 
 def resolve_theme(
@@ -112,4 +113,10 @@ def resolve_theme(
         base_style=base_style,
         emphasis=dict(spec.emphasis),
         easings=easings,
+        easing_specs={
+            "in": spec.animation.in_ease,
+            "out": spec.animation.out_ease,
+            "pop": spec.animation.pop_ease,
+            "idle": spec.animation.idle_ease,
+        },
     )
