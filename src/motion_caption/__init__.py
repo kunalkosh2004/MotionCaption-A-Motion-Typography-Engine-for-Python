@@ -6,7 +6,7 @@ for the design contract.
 
 from __future__ import annotations
 
-from motion_caption import easing, models, themes, typography
+from motion_caption import easing, models, segmentation, themes, typography
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.easing import EasingKind, EasingSpec, compile_spec
 from motion_caption.models import (
@@ -36,6 +36,11 @@ from motion_caption.models import (
     WordTimestamp,
 )
 from motion_caption.registry import Registry
+from motion_caption.segmentation import (
+    SegmentationConfig,
+    Segmenter,
+    segment_transcript,
+)
 from motion_caption.themes import (
     AnimationPersonality,
     EmphasisAppearance,
@@ -90,6 +95,8 @@ __all__ = [
     "ResolvedTheme",
     "ScalePolicy",
     "Segment",
+    "SegmentationConfig",
+    "Segmenter",
     "Size",
     "StandardResolution",
     "TextMeasurer",
@@ -105,6 +112,8 @@ __all__ = [
     "load_theme",
     "models",
     "resolve_theme",
+    "segmentation",
+    "segment_transcript",
     "themes",
     "typography",
 ]
