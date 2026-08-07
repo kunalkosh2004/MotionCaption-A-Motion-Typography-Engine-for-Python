@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "motion-caption"
+version = "0.1.0"
+description = "Motion Typography Engine for Python — deterministic, professional animated subtitles for AI video editors."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+authors = [{ name = "MotionCaption Contributors" }]
+keywords = [
+    "subtitles", "captions", "typography", "video", "animation",
+    "motion-graphics", "ffmpeg", "ass", "ai-video",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Video",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.5",
+    "Pillow>=10.0",
+    "numpy>=1.26",
+    "fonttools>=4.45",
+    "opencv-python-headless>=4.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.3",
+]
+ai = [
+    "google-generativeai>=0.7",
+    "openai>=1.0",
+]
+whisper = ["whisperx>=0.3"]
+
+[project.urls]
+Documentation = "https://github.com/motion-caption/motion-caption"
+Repository = "https://github.com/motion-caption/motion-caption"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/motion_caption"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["B008"]
