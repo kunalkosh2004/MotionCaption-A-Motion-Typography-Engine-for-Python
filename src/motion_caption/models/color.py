@@ -21,10 +21,41 @@ class Color(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
+    def __init__(
+        self,
+        value: object = None,
+        *,
+        r: object = None,
+        g: object = None,
+        b: object = None,
+        a: object = None,
+        **data: object,
+    ) -> None:
+        """Ergonomically accept ``Color("#ff0000")`` and ``Color((255,0,0))``."""
+        if value is not None and not isinstance(value, (int, float)):
+            data = dict(data)
+            if isinstance(value, dict):
+                data.update(value)
+            else:
+                data["value"] = value
+        if r is not None:
+            data["r"] = r
+        if g is not None:
+            data["g"] = g
+        if b is not None:
+            data["b"] = b
+        if a is not None:
+            data["a"] = a
+        super().__init__(**data)
+
     @model_validator(mode="before")
     @classmethod
     def _coerce(cls, data: object) -> object:
         if isinstance(data, Color):
+            return data
+        if isinstance(data, dict):
+            if data.get("r") is None and "value" in data:
+                return cls._coerce(data["value"])
             return data
         if isinstance(data, str):
             value = data.strip()
@@ -60,8 +91,6 @@ class Color(BaseModel):
                 "b": channels[2],
                 "a": channels[3] if len(channels) == 4 else 255,
             }
-        if isinstance(data, dict):
-            return data
         raise ValueError(f"cannot build Color from {data!r}")
 
     @property

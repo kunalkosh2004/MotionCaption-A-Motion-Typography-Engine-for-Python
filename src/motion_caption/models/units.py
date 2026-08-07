@@ -39,6 +39,30 @@ class Length(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
+    def __init__(
+        self,
+        value: object = None,
+        *,
+        unit: Unit | str | None = None,
+        **data: object,
+    ) -> None:
+        """Ergonomically accept ``Length(12)`` and ``Length(1.5, unit="em")``."""
+        if isinstance(value, (int, float)):
+            data["value"] = float(value)
+            if unit is not None:
+                data["unit"] = unit
+        elif isinstance(value, str):
+            data["value"] = value
+        elif isinstance(value, dict):
+            data.update(value)
+        elif isinstance(value, Length):
+            data.setdefault("value", value.value)
+            data.setdefault("unit", value.unit)
+        elif value is not None:
+            data["value"] = value
+        data.setdefault("value", 0.0)
+        super().__init__(**data)
+
     @model_validator(mode="before")
     @classmethod
     def _coerce(cls, data: object) -> object:
@@ -56,6 +80,13 @@ class Length(BaseModel):
                 "unit": Unit(unit) if unit else Unit.PX,
             }
         if isinstance(data, dict):
+            if isinstance(data.get("value"), str):
+                inner = cls._coerce(data["value"])
+                assert isinstance(inner, dict)
+                merged = dict(data)
+                merged["value"] = inner["value"]
+                merged.setdefault("unit", inner["unit"])
+                return merged
             return data
         raise ValueError(f"cannot build Length from {data!r}")
 

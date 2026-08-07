@@ -48,8 +48,8 @@ class Canvas(BaseModel):
     height: int = Field(gt=0)
 
     @classmethod
-    def from_standard(cls, resolution: StandardResolution) -> "Canvas":
-        res = resolution.resolution()
+    def from_standard(cls, resolution: StandardResolution | str) -> "Canvas":
+        res = StandardResolution(resolution).resolution()
         return cls(width=res.width, height=res.height)
 
     @property
