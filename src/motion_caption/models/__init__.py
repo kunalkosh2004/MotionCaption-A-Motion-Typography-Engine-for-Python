@@ -10,6 +10,15 @@ from motion_caption.models.color import (
     GradientStop,
 )
 from motion_caption.models.geometry import Box, Padding, Point, Size
+from motion_caption.models.keyframe import (
+    Keyframe,
+    KeyframeTimeline,
+    PropertyKind,
+    Region,
+    RegionTimeline,
+    interpolate_value,
+    value_kind,
+)
 from motion_caption.models.transcript import (
     EmphasisMode,
     Segment,
@@ -36,9 +45,14 @@ __all__ = [
     "GradientFill",
     "GradientKind",
     "GradientStop",
+    "Keyframe",
+    "KeyframeTimeline",
     "Length",
     "Padding",
     "Point",
+    "PropertyKind",
+    "Region",
+    "RegionTimeline",
     "Resolution",
     "ResolutionContext",
     "ScalePolicy",
@@ -48,4 +62,6 @@ __all__ = [
     "Unit",
     "Word",
     "WordTimestamp",
+    "interpolate_value",
+    "value_kind",
 ]
