@@ -6,10 +6,21 @@ for the design contract.
 
 from __future__ import annotations
 
-from motion_caption import easing, emphasis, models, reading, segmentation, themes, typography
+from motion_caption import (
+    easing,
+    emphasis,
+    layout,
+    models,
+    placement,
+    reading,
+    segmentation,
+    themes,
+    typography,
+)
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.easing import EasingKind, EasingSpec, compile_spec
 from motion_caption.emphasis import apply_emphasis, importance_to_mode
+from motion_caption.layout import LayoutEngine, LayoutOptions, PlacedBlock, lay_out
 from motion_caption.models import (
     Box,
     Color,
@@ -36,6 +47,16 @@ from motion_caption.models import (
     Word,
     WordTimestamp,
 )
+from motion_caption.placement import (
+    PLACEMENT_REGISTRY,
+    PLATFORM_SAFE_AREAS,
+    Face,
+    PlacementConfig,
+    SafeArea,
+    avoid_faces,
+    place,
+    platform_safe_area,
+)
 from motion_caption.reading import ReadingStats, adjust_segments, analyze, difficulty_of
 from motion_caption.registry import Registry
 from motion_caption.segmentation import (
@@ -58,6 +79,7 @@ from motion_caption.typography import (
     FontRef,
     FontStack,
     MeasuredBlock,
+    TextAlign,
     TextMeasurer,
     TextStyle,
 )
@@ -76,6 +98,7 @@ __all__ = [
     "EmphasisMode",
     "EasingKind",
     "EasingSpec",
+    "Face",
     "FillSpec",
     "GradientFill",
     "GradientStop",
@@ -84,9 +107,15 @@ __all__ = [
     "FontStack",
     "Keyframe",
     "KeyframeTimeline",
+    "LayoutEngine",
+    "LayoutOptions",
     "Length",
     "MeasuredBlock",
     "Padding",
+    "PLACEMENT_REGISTRY",
+    "PLATFORM_SAFE_AREAS",
+    "PlacementConfig",
+    "PlacedBlock",
     "Point",
     "PropertyKind",
     "ReadingStats",
@@ -96,12 +125,14 @@ __all__ = [
     "Resolution",
     "ResolutionContext",
     "ResolvedTheme",
+    "SafeArea",
     "ScalePolicy",
     "Segment",
     "SegmentationConfig",
     "Segmenter",
     "Size",
     "StandardResolution",
+    "TextAlign",
     "TextMeasurer",
     "TextStyle",
     "ThemeSpec",
@@ -112,14 +143,20 @@ __all__ = [
     "adjust_segments",
     "analyze",
     "apply_emphasis",
+    "avoid_faces",
     "builtin_themes",
     "compile_spec",
     "difficulty_of",
     "easing",
     "emphasis",
     "importance_to_mode",
+    "layout",
+    "lay_out",
     "load_theme",
     "models",
+    "place",
+    "placement",
+    "platform_safe_area",
     "reading",
     "resolve_theme",
     "segmentation",
