@@ -69,6 +69,15 @@ class TestFontStackModel:
         stack = FontStack(fonts=["Inter", "Helvetica"])
         assert [ref.family for ref in stack.fonts] == ["Inter", "Helvetica"]
 
+    def test_dict_coercion(self):
+        stack = FontStack(fonts=[{"family": "Inter", "weight": 600}, "Helvetica"])
+        assert [ref.family for ref in stack.fonts] == ["Inter", "Helvetica"]
+        assert stack.fonts[0].weight == 600
+
+    def test_mixed_coercion(self):
+        stack = FontStack(fonts=["Helvetica", FontRef(family="Inter", weight=700)])
+        assert [ref.weight for ref in stack.fonts] == [400, 700]
+
     def test_len_and_bool(self):
         assert len(FontStack()) == 0
         assert not FontStack()

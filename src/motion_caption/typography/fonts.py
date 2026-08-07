@@ -259,12 +259,15 @@ class FontStack(BaseModel):
         if isinstance(data, str):
             return {"fonts": [FontRef(family=data)]}
         if isinstance(data, (list, tuple)):
-            return {
-                "fonts": [
-                    ref if isinstance(ref, FontRef) else FontRef(family=str(ref))
-                    for ref in data
-                ]
-            }
+            refs: list[FontRef] = []
+            for ref in data:
+                if isinstance(ref, FontRef):
+                    refs.append(ref)
+                elif isinstance(ref, dict):
+                    refs.append(FontRef.model_validate(ref))
+                else:
+                    refs.append(FontRef(family=str(ref)))
+            return {"fonts": refs}
         return data
 
     def __len__(self) -> int:
