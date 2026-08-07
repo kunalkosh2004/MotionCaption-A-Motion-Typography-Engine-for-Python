@@ -11,11 +11,11 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
-from typing import Sequence
 
 from PIL import ImageFont
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -217,10 +217,13 @@ class FontCatalog:
             upright = [f for f in candidates if not f.italic]
             if upright:
                 candidates = upright
-        return min(candidates, key=lambda f: (abs(f.weight - weight), f.subfamily.lower() != "regular"))
+        return min(
+            candidates,
+            key=lambda f: (abs(f.weight - weight), f.subfamily.lower() != "regular"),
+        )
 
 
-class FontStyle(str, Enum):
+class FontStyle(StrEnum):
     NORMAL = "normal"
     ITALIC = "italic"
 
@@ -256,7 +259,12 @@ class FontStack(BaseModel):
         if isinstance(data, str):
             return {"fonts": [FontRef(family=data)]}
         if isinstance(data, (list, tuple)):
-            return {"fonts": [f if isinstance(f, FontRef) else FontRef(family=str(f)) for f in data]}
+            return {
+                "fonts": [
+                    ref if isinstance(ref, FontRef) else FontRef(family=str(ref))
+                    for ref in data
+                ]
+            }
         return data
 
     def __len__(self) -> int:

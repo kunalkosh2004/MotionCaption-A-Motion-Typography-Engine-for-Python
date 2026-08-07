@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import math
 import re
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-class Unit(str, Enum):
+class Unit(StrEnum):
     """The unit system for all measurable lengths in MotionCaption."""
 
     PX = "px"  # design-space pixels, scaled by the design-space factor
@@ -92,7 +92,7 @@ class Length(BaseModel):
 
     def resolve(
         self,
-        ctx: "ResolutionContext",
+        ctx: ResolutionContext,
         *,
         percent_base: float | None = None,
     ) -> float:
@@ -103,7 +103,7 @@ class Length(BaseModel):
 def _resolve_length(
     value: float,
     unit: Unit,
-    ctx: "ResolutionContext",
+    ctx: ResolutionContext,
     percent_base: float | None,
 ) -> float:
     if unit is Unit.PX:
@@ -132,6 +132,13 @@ class Resolution(BaseModel):
     width: int = Field(gt=0)
     height: int = Field(gt=0)
 
+    def __init__(self, width: object = None, height: object = None, **data: object) -> None:
+        if width is not None:
+            data["width"] = width
+        if height is not None:
+            data["height"] = height
+        super().__init__(**data)
+
     @property
     def aspect(self) -> float:
         return self.width / self.height
@@ -150,7 +157,7 @@ class Resolution(BaseModel):
         return self.width == self.height
 
 
-class ScalePolicy(str, Enum):
+class ScalePolicy(StrEnum):
     """How the design space maps onto the output canvas."""
 
     COVER = "cover"  # scale to fill the canvas (scale = max ratio)

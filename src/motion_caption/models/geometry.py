@@ -11,16 +11,30 @@ class Point(BaseModel):
     x: float = 0.0
     y: float = 0.0
 
-    def __add__(self, other: "Point") -> "Point":
+    def __init__(self, x: object = None, y: object = None, **data: object) -> None:
+        if x is not None:
+            data["x"] = x
+        if y is not None:
+            data["y"] = y
+        super().__init__(**data)
+
+    def __add__(self, other: Point) -> Point:
         return Point(x=self.x + other.x, y=self.y + other.y)
 
-    def __sub__(self, other: "Point") -> "Point":
+    def __sub__(self, other: Point) -> Point:
         return Point(x=self.x - other.x, y=self.y - other.y)
 
 
 class Size(BaseModel):
     width: float = 0.0
     height: float = 0.0
+
+    def __init__(self, width: object = None, height: object = None, **data: object) -> None:
+        if width is not None:
+            data["width"] = width
+        if height is not None:
+            data["height"] = height
+        super().__init__(**data)
 
 
 class Box(BaseModel):
@@ -32,6 +46,24 @@ class Box(BaseModel):
     bottom: float = 0.0
 
     model_config = ConfigDict(frozen=True)
+
+    def __init__(
+        self,
+        left: object = None,
+        top: object = None,
+        right: object = None,
+        bottom: object = None,
+        **data: object,
+    ) -> None:
+        if left is not None:
+            data["left"] = left
+        if top is not None:
+            data["top"] = top
+        if right is not None:
+            data["right"] = right
+        if bottom is not None:
+            data["bottom"] = bottom
+        super().__init__(**data)
 
     @property
     def width(self) -> float:
@@ -54,7 +86,7 @@ class Box(BaseModel):
         return (self.top + self.bottom) / 2.0
 
     @classmethod
-    def from_point_size(cls, point: Point, size: Size) -> "Box":
+    def from_point_size(cls, point: Point, size: Size) -> Box:
         return cls(
             left=point.x,
             top=point.y,
@@ -63,16 +95,21 @@ class Box(BaseModel):
         )
 
     @classmethod
-    def from_xywh(cls, x: float, y: float, w: float, h: float) -> "Box":
+    def from_xywh(cls, x: float, y: float, w: float, h: float) -> Box:
         return cls(left=x, top=y, right=x + w, bottom=y + h)
 
     def contains(self, point: Point) -> bool:
         return self.left <= point.x <= self.right and self.top <= point.y <= self.bottom
 
-    def translate(self, dx: float, dy: float) -> "Box":
-        return Box(left=self.left + dx, top=self.top + dy, right=self.right + dx, bottom=self.bottom + dy)
+    def translate(self, dx: float, dy: float) -> Box:
+        return Box(
+            left=self.left + dx,
+            top=self.top + dy,
+            right=self.right + dx,
+            bottom=self.bottom + dy,
+        )
 
-    def scale(self, factor: float) -> "Box":
+    def scale(self, factor: float) -> Box:
         return Box(
             left=self.left * factor,
             top=self.top * factor,
@@ -80,7 +117,7 @@ class Box(BaseModel):
             bottom=self.bottom * factor,
         )
 
-    def union(self, other: "Box") -> "Box":
+    def union(self, other: Box) -> Box:
         return Box(
             left=min(self.left, other.left),
             top=min(self.top, other.top),
@@ -98,7 +135,7 @@ class Padding(BaseModel):
     bottom: Length = Length(0)
 
     @classmethod
-    def uniform(cls, value: Length) -> "Padding":
+    def uniform(cls, value: Length) -> Padding:
         return cls(left=value, top=value, right=value, bottom=value)
 
     def resolve(self, ctx: ResolutionContext) -> Box:

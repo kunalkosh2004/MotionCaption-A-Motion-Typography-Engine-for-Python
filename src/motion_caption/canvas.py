@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 from motion_caption.models.units import Resolution
 
 
-class AspectRatio(str, Enum):
+class AspectRatio(StrEnum):
     LANDSCAPE = "landscape"
     PORTRAIT = "portrait"
     SQUARE = "square"
 
 
-class StandardResolution(str, Enum):
+class StandardResolution(StrEnum):
     """Named output resolutions used across platforms."""
 
     HD_720P = "720p"
@@ -48,7 +48,7 @@ class Canvas(BaseModel):
     height: int = Field(gt=0)
 
     @classmethod
-    def from_standard(cls, resolution: StandardResolution | str) -> "Canvas":
+    def from_standard(cls, resolution: StandardResolution | str) -> Canvas:
         res = StandardResolution(resolution).resolution()
         return cls(width=res.width, height=res.height)
 

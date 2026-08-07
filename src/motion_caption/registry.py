@@ -8,14 +8,12 @@ importlib entry points.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
 from importlib import metadata
 from threading import RLock
-from typing import Callable, Generic, Iterable, TypeVar
-
-T = TypeVar("T")
 
 
-class Registry(Generic[T]):
+class Registry[T]:
     """A key-addressed registry of plugin values, with alias support."""
 
     def __init__(self, name: str, *, allow_overwrite: bool = False) -> None:
@@ -56,7 +54,8 @@ class Registry(Generic[T]):
         if not key:
             raise ValueError(f"{self._name}: cannot register an empty key")
         with self._lock:
-            if key in self._entries and not (overwrite if overwrite is not None else self._allow_overwrite):
+            can_overwrite = overwrite if overwrite is not None else self._allow_overwrite
+            if key in self._entries and not can_overwrite:
                 raise KeyError(f"{self._name} {key!r} is already registered")
             self._entries[key] = value
             for alias in aliases:

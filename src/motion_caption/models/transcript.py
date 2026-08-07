@@ -7,13 +7,12 @@ rendering concepts.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
-from pydantic import BaseModel, Field, model_validator
-from pydantic import AliasChoices
+from pydantic import AliasChoices, BaseModel, Field, model_validator
 
 
-class EmphasisMode(str, Enum):
+class EmphasisMode(StrEnum):
     """How a word is visually emphasized (decided by the emphasis subsystem)."""
 
     NONE = "none"
@@ -32,9 +31,11 @@ class WordTimestamp(BaseModel):
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
 
     @model_validator(mode="after")
-    def _check_timing(self) -> "WordTimestamp":
+    def _check_timing(self) -> WordTimestamp:
         if self.end < self.start:
-            raise ValueError(f"word {self.text!r} ends before it starts ({self.start} > {self.end})")
+            raise ValueError(
+                f"word {self.text!r} ends before it starts ({self.start} > {self.end})"
+            )
         return self
 
     @property
@@ -71,9 +72,11 @@ class Word(BaseModel):
     emphasis: EmphasisMode = EmphasisMode.NONE
 
     @model_validator(mode="after")
-    def _check_timing(self) -> "Word":
+    def _check_timing(self) -> Word:
         if self.end < self.start:
-            raise ValueError(f"word {self.text!r} ends before it starts ({self.start} > {self.end})")
+            raise ValueError(
+                f"word {self.text!r} ends before it starts ({self.start} > {self.end})"
+            )
         return self
 
     @property
@@ -90,9 +93,11 @@ class Segment(BaseModel):
     words: list[Word] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _check_timing(self) -> "Segment":
+    def _check_timing(self) -> Segment:
         if self.end < self.start:
-            raise ValueError(f"segment ends before it starts ({self.start} > {self.end})")
+            raise ValueError(
+                f"segment ends before it starts ({self.start} > {self.end})"
+            )
         return self
 
     @property

@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from functools import lru_cache
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from motion_caption.models.geometry import Box
 from motion_caption.models.units import Length, ResolutionContext
@@ -49,9 +49,12 @@ class MeasuredLine(BaseModel):
     def text(self) -> str:
         return " ".join(word.text for word in self.words)
 
-    def translate(self, dx: float, dy: float) -> "MeasuredLine":
+    def translate(self, dx: float, dy: float) -> MeasuredLine:
         return MeasuredLine(
-            words=[word.model_copy(update={"box": word.box.translate(dx, dy)}) for word in self.words],
+            words=[
+                word.model_copy(update={"box": word.box.translate(dx, dy)})
+                for word in self.words
+            ],
             width=self.width,
             height=self.height,
             ascent=self.ascent,
@@ -75,7 +78,7 @@ class MeasuredBlock(BaseModel):
     def line_count(self) -> int:
         return len(self.lines)
 
-    def translate(self, dx: float, dy: float) -> "MeasuredBlock":
+    def translate(self, dx: float, dy: float) -> MeasuredBlock:
         return MeasuredBlock(
             lines=[line.translate(dx, dy) for line in self.lines],
             width=self.width,
@@ -218,14 +221,21 @@ class TextMeasurer:
         line_height: float,
         max_width: float,
     ) -> MeasuredBlock:
-        raw_lines = _wrap_words(words, files, manager, size, tracking, word_spacing, line_height, max_width)
+        raw_lines = _wrap_words(
+            words, files, manager, size, tracking, word_spacing, line_height, max_width
+        )
         lines: list[MeasuredLine] = []
         block_width = 0.0
         for raw_line in raw_lines:
-            line_height_px = max(line_height, max(word_ascent + word_descent for (_, _, _, _, _, word_ascent, word_descent) in raw_line))
+            line_height_px = max(
+                line_height,
+                max(a + d for (_, _, _, _, _, a, d) in raw_line),
+            )
+            first_word = raw_line[0]
+            ascent, descent = first_word[5], first_word[6]
             measured_words = []
             line_width = 0.0
-            for text, x, width, path, index, ascent, descent in raw_line:
+            for text, x, width, path, index, _, _ in raw_line:
                 line_width = max(line_width, x + width)
                 measured_words.append(
                     MeasuredWord(
@@ -237,16 +247,19 @@ class TextMeasurer:
                         font_size=float(size),
                     )
                 )
-            first_ascent, first_descent = raw_line[0][5], raw_line[0][6]
             lines.append(
                 MeasuredLine(
                     words=measured_words,
                     width=line_width,
                     height=line_height_px,
-                    ascent=first_ascent,
-                    descent=first_descent,
-                    baseline=first_ascent,
+                    ascent=ascent,
+                    descent=descent,
+                    baseline=ascent,
                 )
             )
             block_width = max(block_width, line_width)
-        return MeasuredBlock(lines=lines, width=block_width, height=sum(line.height for line in lines))
+        return MeasuredBlock(
+            lines=lines,
+            width=block_width,
+            height=sum(line.height for line in lines),
+        )

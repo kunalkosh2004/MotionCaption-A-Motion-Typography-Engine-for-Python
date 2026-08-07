@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -105,10 +105,10 @@ class Color(BaseModel):
     def hex_with_alpha(self) -> str:
         return f"#{self.r:02X}{self.g:02X}{self.b:02X}{self.a:02X}"
 
-    def with_alpha(self, alpha: int) -> "Color":
+    def with_alpha(self, alpha: int) -> Color:
         return Color(r=self.r, g=self.g, b=self.b, a=alpha)
 
-    def interpolate(self, other: "Color", t: float) -> "Color":
+    def interpolate(self, other: Color, t: float) -> Color:
         t = min(1.0, max(0.0, t))
         return Color(
             r=round(self.r + (other.r - self.r) * t),
@@ -139,16 +139,23 @@ def _color_channel(value: object) -> int:
     return round(number)
 
 
-class GradientKind(str, Enum):
+class GradientKind(StrEnum):
     LINEAR = "linear"
     RADIAL = "radial"
 
 
 class GradientStop(BaseModel):
     color: Color
-    position: float = Field(ge=0.0, le=1.0)
+    position: float = Field(default=0.0, ge=0.0, le=1.0)
 
     model_config = ConfigDict(frozen=True)
+
+    def __init__(self, color: object = None, position: object = None, **data: object) -> None:
+        if color is not None:
+            data["color"] = color
+        if position is not None:
+            data["position"] = position
+        super().__init__(**data)
 
 
 class GradientFill(BaseModel):
@@ -171,15 +178,16 @@ class GradientFill(BaseModel):
             return stops[0].color
         if t >= stops[-1].position:
             return stops[-1].color
-        for (before, after) in zip(stops, stops[1:]):
-            if before.position <= t <= after.position:
-                span = after.position - before.position
-                ratio = (t - before.position) / span if span > 0 else 0.0
-                return before.color.interpolate(after.color, ratio)
+        for index, stop in enumerate(stops[:-1]):
+            after = stops[index + 1]
+            if stop.position <= t <= after.position:
+                span = after.position - stop.position
+                ratio = (t - stop.position) / span if span > 0 else 0.0
+                return stop.color.interpolate(after.color, ratio)
         return stops[-1].color
 
 
-class FillKind(str, Enum):
+class FillKind(StrEnum):
     SOLID = "solid"
     GRADIENT = "gradient"
 

@@ -7,7 +7,7 @@ describes one text block; themes assemble styles into caption treatments.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
@@ -17,7 +17,7 @@ from motion_caption.models.units import Length
 from motion_caption.typography.fonts import FontStack
 
 
-class TextAlign(str, Enum):
+class TextAlign(StrEnum):
     LEFT = "left"
     CENTER = "center"
     RIGHT = "right"
