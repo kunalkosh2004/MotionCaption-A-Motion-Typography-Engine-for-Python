@@ -6,8 +6,9 @@ for the design contract.
 
 from __future__ import annotations
 
-from motion_caption import models, typography
+from motion_caption import easing, models, themes, typography
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
+from motion_caption.easing import EasingKind, EasingSpec, compile_spec
 from motion_caption.models import (
     Box,
     Color,
@@ -16,9 +17,14 @@ from motion_caption.models import (
     FillSpec,
     GradientFill,
     GradientStop,
+    Keyframe,
+    KeyframeTimeline,
     Length,
     Padding,
     Point,
+    PropertyKind,
+    Region,
+    RegionTimeline,
     Resolution,
     ResolutionContext,
     ScalePolicy,
@@ -30,6 +36,15 @@ from motion_caption.models import (
     WordTimestamp,
 )
 from motion_caption.registry import Registry
+from motion_caption.themes import (
+    AnimationPersonality,
+    EmphasisAppearance,
+    ResolvedTheme,
+    ThemeSpec,
+    builtin_themes,
+    load_theme,
+    resolve_theme,
+)
 from motion_caption.typography import (
     BackgroundSpec,
     FontManager,
@@ -43,36 +58,53 @@ from motion_caption.typography import (
 __version__ = "0.1.0"
 
 __all__ = [
+    "AnimationPersonality",
     "AspectRatio",
     "BackgroundSpec",
     "Box",
     "Canvas",
     "Color",
     "DesignSpace",
+    "EmphasisAppearance",
     "EmphasisMode",
+    "EasingKind",
+    "EasingSpec",
     "FillSpec",
     "GradientFill",
     "GradientStop",
     "FontManager",
     "FontRef",
     "FontStack",
+    "Keyframe",
+    "KeyframeTimeline",
     "Length",
     "MeasuredBlock",
     "Padding",
     "Point",
+    "PropertyKind",
+    "Region",
+    "RegionTimeline",
     "Registry",
     "Resolution",
     "ResolutionContext",
+    "ResolvedTheme",
     "ScalePolicy",
     "Segment",
     "Size",
     "StandardResolution",
     "TextMeasurer",
     "TextStyle",
+    "ThemeSpec",
     "Transcript",
     "Unit",
     "Word",
     "WordTimestamp",
+    "builtin_themes",
+    "compile_spec",
+    "easing",
+    "load_theme",
     "models",
+    "resolve_theme",
+    "themes",
     "typography",
 ]
