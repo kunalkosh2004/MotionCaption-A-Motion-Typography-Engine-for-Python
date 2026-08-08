@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 from collections import OrderedDict
 
+from motion_caption.compiler.cache import CompiledThemeCache
 from motion_caption.compiler.context import CompileContext
 from motion_caption.compiler.resolve import design_context
 from motion_caption.compiler.stages import PIPELINE
@@ -25,6 +26,7 @@ class Compiler:
         self.fonts = font_manager or default_font_manager()
         self._cache: OrderedDict[str, SubtitleTimeline] = OrderedDict()
         self._cache_size = cache_size
+        self._theme_cache = CompiledThemeCache()
 
     @staticmethod
     def _key(request: CaptionRequest) -> str:
@@ -51,6 +53,7 @@ class Compiler:
             fonts=self.fonts,
             design_ctx=design_ctx,
             canvas=canvas,
+            theme_cache=self._theme_cache,
         )
         for stage in PIPELINE:
             stage(ctx)
@@ -59,6 +62,7 @@ class Compiler:
 
     def invalidate(self) -> None:
         self._cache.clear()
+        self._theme_cache.invalidate()
 
 
 _DEFAULT_COMPILER: Compiler | None = None

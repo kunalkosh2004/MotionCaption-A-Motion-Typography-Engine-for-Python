@@ -125,7 +125,10 @@ def pace(ctx: CompileContext) -> None:
 
 def resolve_theme_stage(ctx: CompileContext) -> None:
     assert ctx.theme_spec is not None
-    ctx.theme = resolve_theme(ctx.theme_spec, ctx.fonts)
+    if ctx.theme_cache is not None:
+        ctx.theme = ctx.theme_cache.resolve(ctx.theme_spec, ctx.fonts)
+    else:
+        ctx.theme = resolve_theme(ctx.theme_spec, ctx.fonts)
 
 
 def resolve_typography_stage(ctx: CompileContext) -> None:

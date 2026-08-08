@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from motion_caption.canvas import Canvas
+from motion_caption.compiler.cache import CompiledThemeCache
 from motion_caption.ir.request import CaptionRequest
 from motion_caption.ir.timeline import SubtitleTimeline
 from motion_caption.ir.typography import ResolvedTypography
@@ -30,6 +31,7 @@ class CompileContext:
 
     theme_spec: ThemeSpec | None = None
     theme: ResolvedTheme | None = None
+    theme_cache: CompiledThemeCache | None = None
     segments: list[Segment] = field(default_factory=list)
     placed: list[PlacedBlock] = field(default_factory=list)
     base_typography: ResolvedTypography | None = None
