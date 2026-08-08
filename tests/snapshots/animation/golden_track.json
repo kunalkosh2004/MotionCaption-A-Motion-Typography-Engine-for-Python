@@ -1,0 +1,98 @@
+{
+  "tracks": {
+    "opacity": {
+      "kind": "opacity",
+      "timeline": {
+        "kind": "opacity",
+        "keyframes": [
+          {
+            "time": 1.2000000000000002,
+            "value": 0.0,
+            "ease": {
+              "kind": "spring",
+              "params": {}
+            }
+          },
+          {
+            "time": 1.4727272727272729,
+            "value": 1.0,
+            "ease": {
+              "kind": "spring",
+              "params": {}
+            }
+          },
+          {
+            "time": 2.359090909090909,
+            "value": 1.0,
+            "ease": {
+              "kind": "cubic-bezier",
+              "params": {
+                "x1": 0.42,
+                "y1": 0.0,
+                "x2": 1.0,
+                "y2": 1.0
+              }
+            }
+          },
+          {
+            "time": 2.5636363636363635,
+            "value": 0.0,
+            "ease": {
+              "kind": "cubic-bezier",
+              "params": {
+                "x1": 0.42,
+                "y1": 0.0,
+                "x2": 1.0,
+                "y2": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    "scale": {
+      "kind": "scale",
+      "timeline": {
+        "kind": "scale",
+        "keyframes": [
+          {
+            "time": 1.2000000000000002,
+            "value": {
+              "x": 1.18,
+              "y": 1.18
+            },
+            "ease": {
+              "kind": "linear",
+              "params": {}
+            }
+          },
+          {
+            "time": 2.5636363636363635,
+            "value": {
+              "x": 1.18,
+              "y": 1.18
+            },
+            "ease": {
+              "kind": "linear",
+              "params": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  "phases": {
+    "in": [
+      1.6,
+      1.6800000000000002
+    ],
+    "out": [
+      1.94,
+      2.0
+    ],
+    "idle": [
+      1.6800000000000002,
+      1.94
+    ]
+  }
+}

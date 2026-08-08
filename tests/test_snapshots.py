@@ -11,10 +11,13 @@ artifact. Regenerate after intentional changes with:
 
 from __future__ import annotations
 
+import json
+
 import pinned
 import snapshot_utils
 from motion_caption.compiler.engine import Compiler
-from motion_caption.ir.timeline import SubtitleTimeline
+from motion_caption.ir.timeline import SubtitleTimeline, WordEvent
+from motion_caption.models.keyframe import Region
 
 GOLDEN_REQUEST = pinned.golden_request()
 
@@ -67,3 +70,38 @@ def test_snapshot_helpers_agree_on_missing_snapshot(pinned_compiler: Compiler) -
     assert path.is_file(), "golden timeline snapshot missing; run with MC_UPDATE_SNAPSHOTS=1"
     expected = _compile_timeline(pinned_compiler).model_dump_json(indent=2) + "\n"
     assert path.read_text(encoding="utf-8") == expected
+
+
+def _animation_times(word: WordEvent) -> list[float]:
+    """Fixed-t sample points across the word's lifespan (held outside)."""
+    start = float(word.start)
+    end = float(word.end)
+    span = end - start
+    return [start + span * fraction for fraction in (0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0)]
+
+
+def test_animation_track_snapshot(pinned_compiler: Compiler) -> None:
+    """The HIGH-emphasis word's keyframe tracks are byte-stable."""
+    word = _compile_timeline(pinned_compiler).words[4]
+    assert word.animation is not None and not word.animation.is_static()
+    assert sorted(track.kind.value for track in word.animation.tracks.values()) == [
+        "opacity",
+        "scale",
+    ]
+    snapshot_utils.assert_text_snapshot(
+        word.animation.model_dump_json(indent=2) + "\n",
+        "animation",
+        "golden_track.json",
+    )
+
+
+def test_animation_curve_snapshot(pinned_compiler: Compiler) -> None:
+    """Sampling the motion at fixed times lands on a stable curve."""
+    word = _compile_timeline(pinned_compiler).words[4]
+    samples = [word.region_at(t) for t in _animation_times(word)]
+    assert all(isinstance(sample, Region) for sample in samples)
+    assert all(sample.opacity >= 0.0 and sample.opacity <= 1.0 for sample in samples)
+    payload = (
+        json.dumps([sample.model_dump(mode="json") for sample in samples], indent=2) + "\n"
+    )
+    snapshot_utils.assert_text_snapshot(payload, "animation", "golden_samples.json")
