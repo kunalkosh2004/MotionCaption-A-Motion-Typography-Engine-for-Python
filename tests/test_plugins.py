@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from motion_caption.ai import AI_REGISTRY
 from motion_caption.animations.templates import ANIMATION_REGISTRY
 from motion_caption.easing.functions import easing_registry
 from motion_caption.emphasis.engine import EMPHASIS_REGISTRY
@@ -24,6 +25,7 @@ def test_all_groups_are_wired():
         "motion_caption.placements": PLACEMENT_REGISTRY,
         "motion_caption.segmentation": SEGMENTATION_REGISTRY,
         "motion_caption.emphasis": EMPHASIS_REGISTRY,
+        "motion_caption.ai": AI_REGISTRY,
     }
     assert expected == PLUGIN_GROUPS
     for registry in PLUGIN_GROUPS.values():

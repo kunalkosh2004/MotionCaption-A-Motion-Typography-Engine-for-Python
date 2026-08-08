@@ -111,3 +111,27 @@ class TestGeminiProvider:
         monkeypatch.delenv("GEMINI_API_KEY", raising=False)
         with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
             providers.GeminiProvider().annotate(_request())
+
+
+class TestEndToEnd:
+    def test_annotated_request_compiles_with_ai_theme(self, any_font, monkeypatch):
+        from motion_caption.compiler import compile
+        from motion_caption.themes.catalog import THEME_REGISTRY
+        from motion_caption.themes.spec import ThemeSpec
+        from motion_caption.typography.fonts import FontRef, FontStack
+
+        THEME_REGISTRY.add(
+            "ai_test_theme",
+            ThemeSpec(
+                name="ai_test_theme",
+                font_stack=FontStack(
+                    fonts=[FontRef(family=any_font.family, weight=any_font.weight)]
+                ),
+            ),
+            overwrite=True,
+        )
+        canned = json.dumps({"theme": "ai_test_theme"})
+        monkeypatch.setattr(providers, "_openai_complete", lambda *a, **k: canned)
+        annotated = annotate(_request(), providers.OpenAIProvider(api_key="k"))
+        timeline = compile(annotated)
+        assert timeline.styles[0].name == "ai_test_theme"

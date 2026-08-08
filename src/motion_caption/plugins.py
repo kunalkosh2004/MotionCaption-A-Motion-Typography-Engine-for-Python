@@ -3,14 +3,13 @@
 Every pluggable subsystem exposes a ``Registry``; this module is the only
 place that maps importlib entry-point groups to them (docs/compiler.md §7).
 ``load_plugins`` is explicitly opt-in — nothing is scanned at import time.
-
-The ``motion_caption.ai`` group lands with the AI provider protocol (Phase 4).
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable
 
+from motion_caption.ai import AI_REGISTRY
 from motion_caption.animations.templates import ANIMATION_REGISTRY
 from motion_caption.easing.functions import easing_registry
 from motion_caption.emphasis.engine import EMPHASIS_REGISTRY
@@ -28,6 +27,7 @@ PLUGIN_GROUPS: dict[str, Registry] = {
     "motion_caption.placements": PLACEMENT_REGISTRY,
     "motion_caption.segmentation": SEGMENTATION_REGISTRY,
     "motion_caption.emphasis": EMPHASIS_REGISTRY,
+    "motion_caption.ai": AI_REGISTRY,
 }
 
 
