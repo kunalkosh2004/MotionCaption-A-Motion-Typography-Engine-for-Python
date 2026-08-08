@@ -95,19 +95,103 @@ def _bake_track(
     y: float,
     fps: int,
     color: Color | None,
+    event_start: float = 0.0,
 ) -> str:
-    """Bake an IR ``AnimationTrack`` into chained ``\\t`` override segments."""
+    """Bake an AnimationTrack into compact ASS transform segments.
+
+    ASS transform timestamps are milliseconds relative to the
+    beginning of the Dialogue event.
+    """
+
     start = track.start
     end = track.end
+
+    if end <= start:
+        region = track.sample(start)
+        return "{" + _region_tags(region, x, y, color) + "}"
+
+    # Sample the animation.
     samples = max(1, round((end - start) * fps))
-    first = track.sample(start)
-    parts = ["{" + _region_tags(first, x, y, color) + "}"]
+
+    regions = [
+        track.sample(
+            start + (end - start) * i / samples
+        )
+        for i in range(samples + 1)
+    ]
+
+    first = regions[0]
+
+    parts = [
+        "{" + _region_tags(first, x, y, color) + "}"
+    ]
+
+    def changed(a, b, epsilon=1e-4):
+        return abs(a - b) > epsilon
+
+    previous = regions[0]
     previous_t = start
-    for index in range(1, samples + 1):
+
+    for index in range(1, len(regions)):
+        region = regions[index]
+
+        # Skip completely identical samples.
+        if (
+            not changed(region.scale.x, previous.scale.x)
+            and not changed(region.scale.y, previous.scale.y)
+            and not changed(region.rotation, previous.rotation)
+            and not changed(region.blur, previous.blur)
+            and not changed(region.opacity, previous.opacity)
+        ):
+            continue
+
         t = start + (end - start) * index / samples
-        region = track.sample(t)
-        parts.append(f"{{\\t({previous_t:g},{t:g},{_region_tags(region, x, y, color)})}}")
+
+        t1 = max(
+            0,
+            round((previous_t - event_start) * 1000),
+        )
+
+        t2 = max(
+            t1,
+            round((t - event_start) * 1000),
+        )
+
+        tags = []
+
+        if changed(region.scale.x, previous.scale.x):
+            tags.append(
+                f"\\fscx{region.scale.x * 100:g}"
+            )
+
+        if changed(region.scale.y, previous.scale.y):
+            tags.append(
+                f"\\fscy{region.scale.y * 100:g}"
+            )
+
+        if changed(region.rotation, previous.rotation):
+            tags.append(
+                f"\\frz{region.rotation:g}"
+            )
+
+        if changed(region.blur, previous.blur):
+            tags.append(
+                f"\\blur{region.blur:g}"
+            )
+
+        if changed(region.opacity, previous.opacity):
+            tags.append(
+                f"\\alpha{_ass_alpha(region.opacity)}"
+            )
+
+        if tags and t2 > t1:
+            parts.append(
+                f"{{\\t({t1},{t2},{''.join(tags)})}}"
+            )
+
+        previous = region
         previous_t = t
+
     return "".join(parts)
 
 
@@ -219,7 +303,17 @@ class AssExporter:
                     and typography.fill != base_fill
                 ):
                     color = typography.fill
-                blocks.append(_bake_track(track, x, y, fps, color) + word.text)
+                blocks.append(
+                    _bake_track(
+                        track,
+                        x,
+                        y,
+                        fps,
+                        color,
+                        event_start=event.start,
+                    )
+                    + word.text
+                )
             events.append(
                 f"Dialogue: {event.layer},{_ass_time(event.start)},{_ass_time(event.end)},"
                 f"{style_name},,0,0,0,,{' '.join(blocks)}"
