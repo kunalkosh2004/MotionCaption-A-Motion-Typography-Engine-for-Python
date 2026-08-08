@@ -12,7 +12,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from motion_caption.compiler.engine import Compiler
-from motion_caption.models.transcript import EmphasisMode
+from motion_caption.ir.request import AIContribution, CaptionRequest
+from motion_caption.models.transcript import EmphasisMode, Transcript, WordTimestamp
 from motion_caption.themes.spec import (
     AnimationPersonality,
     EmphasisAppearance,
@@ -86,3 +87,27 @@ def pinned_theme(font_manager: FontManager | None = None) -> ResolvedTheme:
 def pinned_compiler(font_manager: FontManager | None = None) -> Compiler:
     """A Compiler whose font resolution is fully pinned."""
     return Compiler(font_manager=font_manager or pinned_font_manager())
+
+
+def golden_request() -> CaptionRequest:
+    """The canonical golden request shared by snapshot and frame tests.
+
+    Two caption groups (via ``llm_annotations.splits``), one HIGH-emphasis
+    word (scale + cyan color + glow, elastic pop easing), one KARAOKE word,
+    and a background box + shadow + glow theme — every rendering feature
+    exercised deterministically against the bundled Roboto.
+    """
+    words = [
+        WordTimestamp(text=text, start=float(index) * 0.4, end=(index + 1) * 0.4)
+        for index, text in enumerate(["welcome", "to", "the", "motion", "typography", "engine"])
+    ]
+    return CaptionRequest(
+        metadata={"source": "golden", "harness": "phase-5"},
+        transcript=Transcript(words=words),
+        theme=pinned_theme_spec(),
+        llm_annotations=AIContribution(
+            importance={4: 0.95},
+            emphasis={4: EmphasisMode.HIGH, 2: EmphasisMode.KARAOKE},
+            splits=[[0, 1, 2], [3, 4, 5]],
+        ),
+    )

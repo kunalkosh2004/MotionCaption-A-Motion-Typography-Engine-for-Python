@@ -1,0 +1,1224 @@
+{
+  "format_version": "1.0",
+  "metadata": {
+    "source": "golden",
+    "harness": "phase-5"
+  },
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "design": {
+    "reference": {
+      "width": 1920,
+      "height": 1080
+    },
+    "policy": "cover"
+  },
+  "scale": 1.0,
+  "styles": [
+    {
+      "name": "pinned_golden",
+      "typography": {
+        "font": {
+          "family": "Roboto",
+          "weight": 400,
+          "italic": false,
+          "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+          "index": 0
+        },
+        "font_size": 56.0,
+        "fill": {
+          "r": 255,
+          "g": 255,
+          "b": 255,
+          "a": 255
+        },
+        "fill_gradient": null,
+        "stroke": null,
+        "shadow": {
+          "offset_x": 2.0,
+          "offset_y": 2.0,
+          "blur": 2.0,
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 255
+          },
+          "opacity": 0.6
+        },
+        "glow": {
+          "color": {
+            "r": 0,
+            "g": 229,
+            "b": 255,
+            "a": 255
+          },
+          "spread": 6.0,
+          "opacity": 0.5
+        },
+        "background": {
+          "fill": {
+            "r": 17,
+            "g": 17,
+            "b": 17,
+            "a": 255
+          },
+          "fill_gradient": null,
+          "padding": {
+            "left": 16.0,
+            "top": 16.0,
+            "right": 16.0,
+            "bottom": 16.0
+          },
+          "corner_radius": 10.0,
+          "border": null,
+          "opacity": 0.85,
+          "blur": 0.0
+        },
+        "letter_spacing": 1.0,
+        "word_spacing": 0.0,
+        "line_height": 67.2,
+        "opacity": 1.0,
+        "blur": 0.0,
+        "uppercase": false,
+        "align": "center"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "name": "main",
+      "speaker": null,
+      "events": [
+        {
+          "start": 0.0,
+          "end": 1.2000000000000002,
+          "text": "welcome to the",
+          "style": {
+            "name": "pinned_golden",
+            "typography": {
+              "font": {
+                "family": "Roboto",
+                "weight": 400,
+                "italic": false,
+                "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                "index": 0
+              },
+              "font_size": 56.0,
+              "fill": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "a": 255
+              },
+              "fill_gradient": null,
+              "stroke": null,
+              "shadow": {
+                "offset_x": 2.0,
+                "offset_y": 2.0,
+                "blur": 2.0,
+                "color": {
+                  "r": 0,
+                  "g": 0,
+                  "b": 0,
+                  "a": 255
+                },
+                "opacity": 0.6
+              },
+              "glow": {
+                "color": {
+                  "r": 0,
+                  "g": 229,
+                  "b": 255,
+                  "a": 255
+                },
+                "spread": 6.0,
+                "opacity": 0.5
+              },
+              "background": {
+                "fill": {
+                  "r": 17,
+                  "g": 17,
+                  "b": 17,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "padding": {
+                  "left": 16.0,
+                  "top": 16.0,
+                  "right": 16.0,
+                  "bottom": 16.0
+                },
+                "corner_radius": 10.0,
+                "border": null,
+                "opacity": 0.85,
+                "blur": 0.0
+              },
+              "letter_spacing": 1.0,
+              "word_spacing": 0.0,
+              "line_height": 67.2,
+              "opacity": 1.0,
+              "blur": 0.0,
+              "uppercase": false,
+              "align": "center"
+            }
+          },
+          "region": {
+            "box": {
+              "left": 764.0,
+              "top": 1012.8,
+              "right": 1156.0,
+              "bottom": 1080.0
+            },
+            "anchor": {
+              "x": 960.0,
+              "y": 1046.4
+            },
+            "speaker": null,
+            "layer": 0
+          },
+          "words": [
+            {
+              "text": "welcome",
+              "start": 0.0,
+              "end": 0.4,
+              "importance": 0.55,
+              "emphasis": "medium",
+              "box": {
+                "left": 764.0,
+                "top": 1012.8,
+                "right": 996.0,
+                "bottom": 1080.0
+              },
+              "typography": {
+                "font": {
+                  "family": "Roboto",
+                  "weight": 400,
+                  "italic": false,
+                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "index": 0
+                },
+                "font_size": 56.0,
+                "fill": {
+                  "r": 255,
+                  "g": 255,
+                  "b": 255,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "stroke": null,
+                "shadow": {
+                  "offset_x": 2.0,
+                  "offset_y": 2.0,
+                  "blur": 2.0,
+                  "color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                  },
+                  "opacity": 0.6
+                },
+                "glow": {
+                  "color": {
+                    "r": 0,
+                    "g": 229,
+                    "b": 255,
+                    "a": 255
+                  },
+                  "spread": 6.0,
+                  "opacity": 0.5
+                },
+                "background": {
+                  "fill": {
+                    "r": 17,
+                    "g": 17,
+                    "b": 17,
+                    "a": 255
+                  },
+                  "fill_gradient": null,
+                  "padding": {
+                    "left": 16.0,
+                    "top": 16.0,
+                    "right": 16.0,
+                    "bottom": 16.0
+                  },
+                  "corner_radius": 10.0,
+                  "border": null,
+                  "opacity": 0.85,
+                  "blur": 0.0
+                },
+                "letter_spacing": 1.0,
+                "word_spacing": 0.0,
+                "line_height": 67.2,
+                "opacity": 1.0,
+                "blur": 0.0,
+                "uppercase": false,
+                "align": "center"
+              },
+              "animation": {
+                "tracks": {
+                  "opacity": {
+                    "kind": "opacity",
+                    "timeline": {
+                      "kind": "opacity",
+                      "keyframes": [
+                        {
+                          "time": 0.0,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 0.24000000000000005,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 1.0200000000000002,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        },
+                        {
+                          "time": 1.2000000000000002,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "phases": {
+                  "in": [
+                    0.0,
+                    0.08000000000000002
+                  ],
+                  "out": [
+                    0.34,
+                    0.4
+                  ],
+                  "idle": [
+                    0.08000000000000002,
+                    0.34
+                  ]
+                }
+              }
+            },
+            {
+              "text": "to",
+              "start": 0.4,
+              "end": 0.8,
+              "importance": 0.05000000000000002,
+              "emphasis": "none",
+              "box": {
+                "left": 1010.0,
+                "top": 1012.8,
+                "right": 1061.0,
+                "bottom": 1080.0
+              },
+              "typography": {
+                "font": {
+                  "family": "Roboto",
+                  "weight": 400,
+                  "italic": false,
+                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "index": 0
+                },
+                "font_size": 56.0,
+                "fill": {
+                  "r": 255,
+                  "g": 255,
+                  "b": 255,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "stroke": null,
+                "shadow": {
+                  "offset_x": 2.0,
+                  "offset_y": 2.0,
+                  "blur": 2.0,
+                  "color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                  },
+                  "opacity": 0.6
+                },
+                "glow": {
+                  "color": {
+                    "r": 0,
+                    "g": 229,
+                    "b": 255,
+                    "a": 255
+                  },
+                  "spread": 6.0,
+                  "opacity": 0.5
+                },
+                "background": {
+                  "fill": {
+                    "r": 17,
+                    "g": 17,
+                    "b": 17,
+                    "a": 255
+                  },
+                  "fill_gradient": null,
+                  "padding": {
+                    "left": 16.0,
+                    "top": 16.0,
+                    "right": 16.0,
+                    "bottom": 16.0
+                  },
+                  "corner_radius": 10.0,
+                  "border": null,
+                  "opacity": 0.85,
+                  "blur": 0.0
+                },
+                "letter_spacing": 1.0,
+                "word_spacing": 0.0,
+                "line_height": 67.2,
+                "opacity": 1.0,
+                "blur": 0.0,
+                "uppercase": false,
+                "align": "center"
+              },
+              "animation": {
+                "tracks": {
+                  "opacity": {
+                    "kind": "opacity",
+                    "timeline": {
+                      "kind": "opacity",
+                      "keyframes": [
+                        {
+                          "time": 0.0,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 0.24000000000000005,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 1.0200000000000002,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        },
+                        {
+                          "time": 1.2000000000000002,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "phases": {
+                  "in": [
+                    0.4,
+                    0.48000000000000004
+                  ],
+                  "out": [
+                    0.74,
+                    0.8
+                  ],
+                  "idle": [
+                    0.48000000000000004,
+                    0.74
+                  ]
+                }
+              }
+            },
+            {
+              "text": "the",
+              "start": 0.8,
+              "end": 1.2000000000000002,
+              "importance": 0.15000000000000002,
+              "emphasis": "karaoke",
+              "box": {
+                "left": 1075.0,
+                "top": 1012.8,
+                "right": 1156.0,
+                "bottom": 1080.0
+              },
+              "typography": {
+                "font": {
+                  "family": "Roboto",
+                  "weight": 400,
+                  "italic": false,
+                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "index": 0
+                },
+                "font_size": 56.0,
+                "fill": {
+                  "r": 79,
+                  "g": 195,
+                  "b": 247,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "stroke": null,
+                "shadow": {
+                  "offset_x": 2.0,
+                  "offset_y": 2.0,
+                  "blur": 2.0,
+                  "color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                  },
+                  "opacity": 0.6
+                },
+                "glow": {
+                  "color": {
+                    "r": 0,
+                    "g": 229,
+                    "b": 255,
+                    "a": 255
+                  },
+                  "spread": 6.0,
+                  "opacity": 0.5
+                },
+                "background": {
+                  "fill": {
+                    "r": 17,
+                    "g": 17,
+                    "b": 17,
+                    "a": 255
+                  },
+                  "fill_gradient": null,
+                  "padding": {
+                    "left": 16.0,
+                    "top": 16.0,
+                    "right": 16.0,
+                    "bottom": 16.0
+                  },
+                  "corner_radius": 10.0,
+                  "border": null,
+                  "opacity": 0.85,
+                  "blur": 0.0
+                },
+                "letter_spacing": 1.0,
+                "word_spacing": 0.0,
+                "line_height": 67.2,
+                "opacity": 1.0,
+                "blur": 0.0,
+                "uppercase": false,
+                "align": "center"
+              },
+              "animation": {
+                "tracks": {
+                  "opacity": {
+                    "kind": "opacity",
+                    "timeline": {
+                      "kind": "opacity",
+                      "keyframes": [
+                        {
+                          "time": 0.0,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 0.24000000000000005,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 1.0200000000000002,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        },
+                        {
+                          "time": 1.2000000000000002,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "phases": {
+                  "in": [
+                    0.8,
+                    0.8800000000000001
+                  ],
+                  "out": [
+                    1.1400000000000001,
+                    1.2000000000000002
+                  ],
+                  "idle": [
+                    0.8800000000000001,
+                    1.1400000000000001
+                  ]
+                }
+              }
+            }
+          ],
+          "speaker": null,
+          "layer": 0
+        },
+        {
+          "start": 1.2000000000000002,
+          "end": 2.5636363636363635,
+          "text": "motion typography engine",
+          "style": {
+            "name": "pinned_golden",
+            "typography": {
+              "font": {
+                "family": "Roboto",
+                "weight": 400,
+                "italic": false,
+                "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                "index": 0
+              },
+              "font_size": 56.0,
+              "fill": {
+                "r": 255,
+                "g": 255,
+                "b": 255,
+                "a": 255
+              },
+              "fill_gradient": null,
+              "stroke": null,
+              "shadow": {
+                "offset_x": 2.0,
+                "offset_y": 2.0,
+                "blur": 2.0,
+                "color": {
+                  "r": 0,
+                  "g": 0,
+                  "b": 0,
+                  "a": 255
+                },
+                "opacity": 0.6
+              },
+              "glow": {
+                "color": {
+                  "r": 0,
+                  "g": 229,
+                  "b": 255,
+                  "a": 255
+                },
+                "spread": 6.0,
+                "opacity": 0.5
+              },
+              "background": {
+                "fill": {
+                  "r": 17,
+                  "g": 17,
+                  "b": 17,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "padding": {
+                  "left": 16.0,
+                  "top": 16.0,
+                  "right": 16.0,
+                  "bottom": 16.0
+                },
+                "corner_radius": 10.0,
+                "border": null,
+                "opacity": 0.85,
+                "blur": 0.0
+              },
+              "letter_spacing": 1.0,
+              "word_spacing": 0.0,
+              "line_height": 67.2,
+              "opacity": 1.0,
+              "blur": 0.0,
+              "uppercase": false,
+              "align": "center"
+            }
+          },
+          "region": {
+            "box": {
+              "left": 626.5,
+              "top": 1012.8,
+              "right": 1293.5,
+              "bottom": 1080.0
+            },
+            "anchor": {
+              "x": 960.0,
+              "y": 1046.4
+            },
+            "speaker": null,
+            "layer": 0
+          },
+          "words": [
+            {
+              "text": "motion",
+              "start": 1.2000000000000002,
+              "end": 1.6,
+              "importance": 0.55,
+              "emphasis": "medium",
+              "box": {
+                "left": 626.5,
+                "top": 1012.8,
+                "right": 807.5,
+                "bottom": 1080.0
+              },
+              "typography": {
+                "font": {
+                  "family": "Roboto",
+                  "weight": 400,
+                  "italic": false,
+                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "index": 0
+                },
+                "font_size": 56.0,
+                "fill": {
+                  "r": 255,
+                  "g": 255,
+                  "b": 255,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "stroke": null,
+                "shadow": {
+                  "offset_x": 2.0,
+                  "offset_y": 2.0,
+                  "blur": 2.0,
+                  "color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                  },
+                  "opacity": 0.6
+                },
+                "glow": {
+                  "color": {
+                    "r": 0,
+                    "g": 229,
+                    "b": 255,
+                    "a": 255
+                  },
+                  "spread": 6.0,
+                  "opacity": 0.5
+                },
+                "background": {
+                  "fill": {
+                    "r": 17,
+                    "g": 17,
+                    "b": 17,
+                    "a": 255
+                  },
+                  "fill_gradient": null,
+                  "padding": {
+                    "left": 16.0,
+                    "top": 16.0,
+                    "right": 16.0,
+                    "bottom": 16.0
+                  },
+                  "corner_radius": 10.0,
+                  "border": null,
+                  "opacity": 0.85,
+                  "blur": 0.0
+                },
+                "letter_spacing": 1.0,
+                "word_spacing": 0.0,
+                "line_height": 67.2,
+                "opacity": 1.0,
+                "blur": 0.0,
+                "uppercase": false,
+                "align": "center"
+              },
+              "animation": {
+                "tracks": {
+                  "opacity": {
+                    "kind": "opacity",
+                    "timeline": {
+                      "kind": "opacity",
+                      "keyframes": [
+                        {
+                          "time": 1.2000000000000002,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 1.4727272727272729,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 2.359090909090909,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        },
+                        {
+                          "time": 2.5636363636363635,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "phases": {
+                  "in": [
+                    1.2000000000000002,
+                    1.2800000000000002
+                  ],
+                  "out": [
+                    1.54,
+                    1.6
+                  ],
+                  "idle": [
+                    1.2800000000000002,
+                    1.54
+                  ]
+                }
+              }
+            },
+            {
+              "text": "typography",
+              "start": 1.6,
+              "end": 2.0,
+              "importance": 0.95,
+              "emphasis": "high",
+              "box": {
+                "left": 821.5,
+                "top": 1012.8,
+                "right": 1107.5,
+                "bottom": 1080.0
+              },
+              "typography": {
+                "font": {
+                  "family": "Roboto",
+                  "weight": 400,
+                  "italic": false,
+                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "index": 0
+                },
+                "font_size": 56.0,
+                "fill": {
+                  "r": 0,
+                  "g": 229,
+                  "b": 255,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "stroke": null,
+                "shadow": {
+                  "offset_x": 2.0,
+                  "offset_y": 2.0,
+                  "blur": 2.0,
+                  "color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                  },
+                  "opacity": 0.6
+                },
+                "glow": {
+                  "color": {
+                    "r": 0,
+                    "g": 229,
+                    "b": 255,
+                    "a": 255
+                  },
+                  "spread": 12.0,
+                  "opacity": 0.8
+                },
+                "background": {
+                  "fill": {
+                    "r": 17,
+                    "g": 17,
+                    "b": 17,
+                    "a": 255
+                  },
+                  "fill_gradient": null,
+                  "padding": {
+                    "left": 16.0,
+                    "top": 16.0,
+                    "right": 16.0,
+                    "bottom": 16.0
+                  },
+                  "corner_radius": 10.0,
+                  "border": null,
+                  "opacity": 0.85,
+                  "blur": 0.0
+                },
+                "letter_spacing": 1.0,
+                "word_spacing": 0.0,
+                "line_height": 67.2,
+                "opacity": 1.0,
+                "blur": 0.0,
+                "uppercase": false,
+                "align": "center"
+              },
+              "animation": {
+                "tracks": {
+                  "opacity": {
+                    "kind": "opacity",
+                    "timeline": {
+                      "kind": "opacity",
+                      "keyframes": [
+                        {
+                          "time": 1.2000000000000002,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 1.4727272727272729,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 2.359090909090909,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        },
+                        {
+                          "time": 2.5636363636363635,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "scale": {
+                    "kind": "scale",
+                    "timeline": {
+                      "kind": "scale",
+                      "keyframes": [
+                        {
+                          "time": 1.2000000000000002,
+                          "value": {
+                            "x": 1.18,
+                            "y": 1.18
+                          },
+                          "ease": {
+                            "kind": "linear",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 2.5636363636363635,
+                          "value": {
+                            "x": 1.18,
+                            "y": 1.18
+                          },
+                          "ease": {
+                            "kind": "linear",
+                            "params": {}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "phases": {
+                  "in": [
+                    1.6,
+                    1.6800000000000002
+                  ],
+                  "out": [
+                    1.94,
+                    2.0
+                  ],
+                  "idle": [
+                    1.6800000000000002,
+                    1.94
+                  ]
+                }
+              }
+            },
+            {
+              "text": "engine",
+              "start": 2.0,
+              "end": 2.4000000000000004,
+              "importance": 0.6,
+              "emphasis": "high",
+              "box": {
+                "left": 1121.5,
+                "top": 1012.8,
+                "right": 1293.5,
+                "bottom": 1080.0
+              },
+              "typography": {
+                "font": {
+                  "family": "Roboto",
+                  "weight": 400,
+                  "italic": false,
+                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "index": 0
+                },
+                "font_size": 56.0,
+                "fill": {
+                  "r": 0,
+                  "g": 229,
+                  "b": 255,
+                  "a": 255
+                },
+                "fill_gradient": null,
+                "stroke": null,
+                "shadow": {
+                  "offset_x": 2.0,
+                  "offset_y": 2.0,
+                  "blur": 2.0,
+                  "color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                  },
+                  "opacity": 0.6
+                },
+                "glow": {
+                  "color": {
+                    "r": 0,
+                    "g": 229,
+                    "b": 255,
+                    "a": 255
+                  },
+                  "spread": 12.0,
+                  "opacity": 0.8
+                },
+                "background": {
+                  "fill": {
+                    "r": 17,
+                    "g": 17,
+                    "b": 17,
+                    "a": 255
+                  },
+                  "fill_gradient": null,
+                  "padding": {
+                    "left": 16.0,
+                    "top": 16.0,
+                    "right": 16.0,
+                    "bottom": 16.0
+                  },
+                  "corner_radius": 10.0,
+                  "border": null,
+                  "opacity": 0.85,
+                  "blur": 0.0
+                },
+                "letter_spacing": 1.0,
+                "word_spacing": 0.0,
+                "line_height": 67.2,
+                "opacity": 1.0,
+                "blur": 0.0,
+                "uppercase": false,
+                "align": "center"
+              },
+              "animation": {
+                "tracks": {
+                  "opacity": {
+                    "kind": "opacity",
+                    "timeline": {
+                      "kind": "opacity",
+                      "keyframes": [
+                        {
+                          "time": 1.2000000000000002,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 1.4727272727272729,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "spring",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 2.359090909090909,
+                          "value": 1.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        },
+                        {
+                          "time": 2.5636363636363635,
+                          "value": 0.0,
+                          "ease": {
+                            "kind": "cubic-bezier",
+                            "params": {
+                              "x1": 0.42,
+                              "y1": 0.0,
+                              "x2": 1.0,
+                              "y2": 1.0
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "scale": {
+                    "kind": "scale",
+                    "timeline": {
+                      "kind": "scale",
+                      "keyframes": [
+                        {
+                          "time": 1.2000000000000002,
+                          "value": {
+                            "x": 1.18,
+                            "y": 1.18
+                          },
+                          "ease": {
+                            "kind": "linear",
+                            "params": {}
+                          }
+                        },
+                        {
+                          "time": 2.5636363636363635,
+                          "value": {
+                            "x": 1.18,
+                            "y": 1.18
+                          },
+                          "ease": {
+                            "kind": "linear",
+                            "params": {}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "phases": {
+                  "in": [
+                    2.0,
+                    2.08
+                  ],
+                  "out": [
+                    2.3400000000000003,
+                    2.4000000000000004
+                  ],
+                  "idle": [
+                    2.08,
+                    2.3400000000000003
+                  ]
+                }
+              }
+            }
+          ],
+          "speaker": null,
+          "layer": 0
+        }
+      ]
+    }
+  ]
+}
