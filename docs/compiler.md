@@ -1,9 +1,9 @@
 # MotionCaption Compiler Architecture
 
-> Status: design contract (supersedes the phase-5 forward references in
-> `architecture.md`). Everything here is either implemented or on the roadmap
-> below. Existing public APIs remain unchanged; this document describes what is
-> **added** on top of the current pipeline.
+> Status: **implemented** (through Phase 6). This document is both the design
+> contract and the implementation reference; it supersedes the forward
+> references in `architecture.md`. Existing public APIs remain unchanged;
+> everything below now exists in the codebase.
 
 MotionCaption is a **compiler**, not a subtitle renderer. The analogy is
 deliberate and runs through every design decision:
@@ -40,9 +40,14 @@ bytes. Nothing else in the pipeline is allowed to reach I/O.
   exporter, segmentation and emphasis registries. Decentralized by design.
 - **Determinism discipline.** No RNG / wall-clock / locale formatting in core;
   pure easing and measurement. This is what makes golden tests possible.
-- **Test culture.** 284 passing tests, one subsystem per file.
+- **Test culture.** One subsystem per file; 388 passing tests today (plus
+  golden frames, timeline/animation snapshots and a benchmark script — §10).
 
-### 1.2 Weaknesses identified
+### 1.2 Weaknesses identified (all resolved)
+
+> Every item below was fixed in Phases 1–5; the fixes are recorded next to
+> each entry. This section is kept as the rationale for why the architecture
+> looks the way it does.
 
 1. **No canonical IR; exporters re-run the pipeline.** `build_ass` measures,
    wraps, lays out, places and animates *itself* (exporters/ass.py:91–107),
@@ -80,6 +85,9 @@ bytes. Nothing else in the pipeline is allowed to reach I/O.
 10. **No golden/snapshot/benchmark harness.** Determinism is asserted by unit
     tests, not by byte-compare frames or timeline snapshots.
 11. **Docs are stale.** `README.md` still lists most subsystems as "up next".
+    *Resolved (Phase 6):* `README.md` rewritten around the compiler pipeline;
+    `GUIDE.md` documents the compiler/IR/AI/plugin surfaces; this document is
+    the compiler contract.
 
 ---
 
@@ -314,13 +322,17 @@ Decisions:
 
 | Cache | Key | Stage |
 |---|---|---|
-| `CompiledThemeCache` | (theme name/spec hash, font manager id) | 4 |
+| `CompiledThemeCache` (LRU, size 64) | (spec digest, catalog directories) | 4 |
 | measure (existing `TextMeasurer` LRU) | (words, files, size, spacing, width) | 6 |
-| `TimelineCache` | sha256 of `CaptionRequest.model_dump_json` | 9 |
+| `TimelineCache` (LRU, size 64) | sha256 of `CaptionRequest.model_dump_json` | 9 |
 | glyph cache (renderer-local) | (path, index, size) → PIL font | 10 |
 
-Caches are never inside a pure stage; they wrap stage invocation in the
-`Compiler`. Determinism is untouched — caches are exact-key LRUs.
+All four exist today. Caches are never inside a pure stage; they wrap stage
+invocation in the `Compiler` (and the renderer). Determinism is untouched —
+caches are exact-key LRUs. Note the theme cache keys on catalog
+*directories* (not manager identity), so two managers over the same
+directories share entries; resolved themes are shared and treated as
+read-only by downstream stages.
 
 ---
 
@@ -409,49 +421,62 @@ surfaces are narrow protocols (one callable / one class each).
 
 ---
 
-## 9. AI seam (deferred but specified)
+## 9. AI seam (implemented)
 
 ```python
 class AIProvider(Protocol):
+    name: str
     def annotate(self, request: CaptionRequest) -> AIContribution: ...
 ```
 
-Deterministic fallback = existing rule-based scorer + segmentation strategies.
-A provider configured at the composition root writes `llm_annotations` onto
-the request; the compiler prefers them when present. Providers are never
-imported by core; the `motion_caption.ai` entry-point group is the only wiring.
+Implemented in `motion_caption/ai/`: `AIProvider`, `AI_REGISTRY`, the
+`annotate(request, provider)` helper (returns a copy — the input request is
+never mutated, preserving determinism), and reference `OpenAIProvider` /
+`GeminiProvider` with lazy SDK imports (the `ai` extra installs the SDKs;
+core stays dependency-free). Deterministic fallback = rule-based scorer +
+segmentation strategies. A provider configured at the composition root
+writes `llm_annotations` onto the request; the compiler prefers them when
+present. Providers are never imported by core; the `motion_caption.ai`
+entry-point group is the only wiring.
 
 ---
 
-## 10. Testing strategy
+## 10. Testing strategy (implemented)
 
-- **Unit** — existing 284 continue; new tests per IR/compiler module.
+- **Unit** — one subsystem per file; 388 tests.
 - **Timeline snapshot** — compile a request, dump `SubtitleTimeline` to JSON,
-  compare against checked-in snapshot (regenerate via `--update`).
-- **Animation snapshot** — sample curves at fixed t values, compare floats.
-- **Golden frames** — render at fixed t on a pinned font, compare PNG bytes.
-  Font pinning: test fixture builds a `FontCatalog` from a bundled directory so
-  CI and laptops agree.
-- **Determinism** — compile the same request twice; assert byte equality.
-- **Benchmarks** — `benchmarks/` script timing compile + render at scale.
+  compare against the checked-in snapshot under `tests/snapshots/timeline/`
+  (regenerate with `MC_UPDATE_SNAPSHOTS=1`).
+- **Animation snapshot** — sample curves at fixed t values, compare against
+  `tests/snapshots/animation/`.
+- **Golden frames** — render at fixed t on a pinned font, compare PNG bytes
+  against `tests/snapshots/golden/`. Font pinning: the bundled
+  `tests/fonts/Roboto-Regular.ttf` is referenced **by path**, so CI and
+  laptops agree; the committed PNG is byte-stable for the generating
+  Pillow/FreeType version.
+- **Determinism** — compile the same request twice; assert byte equality
+  (`Compiler` cache included).
+- **Benchmarks** — `benchmarks/bench.py` times cold/warm compile, frame
+  render, sequence render and both exporters over the pinned pipeline.
 
 ---
 
 ## 11. Implementation roadmap (one subsystem at a time)
 
-1. **IR + request** — `ir/` package, `ResolvedTypography`, `SubtitleTimeline`,
+1. ✅ **IR + request** — `ir/` package, `ResolvedTypography`, `SubtitleTimeline`,
    `CaptionRequest` (+ tests, exports).
-2. **Compiler** — `compiler/` stages + `Compiler`/`compile()` (+ tests,
+2. ✅ **Compiler** — `compiler/` stages + `Compiler`/`compile()` (+ tests,
    determinism + cache).
-3. **Exporters** — `Exporter` protocol, ASS refactor onto IR, JSON exporter
+3. ✅ **Exporters** — `Exporter` protocol, ASS refactor onto IR, JSON exporter
    (+ tests, snapshots).
-4. **Dumb renderer** — `TimelineRenderer`, `CaptionRenderer` facade, golden
+4. ✅ **Dumb renderer** — `TimelineRenderer`, `CaptionRenderer` facade, golden
    frames.
-5. **Caching layer** — `CompiledThemeCache`, `TimelineCache`, glyph cache.
-6. **Plugin aggregation** — `plugins.py`, entry-point loading.
-7. **AI seam** — `AIProvider` protocol + fallback.
-8. **Docs + benchmarks** — README/GUIDE refresh, `docs/ir.md`,
-   `docs/plugins.md`, benchmark suite.
+5. ✅ **Caching layer** — `CompiledThemeCache`, `TimelineCache`, glyph cache.
+6. ✅ **Plugin aggregation** — `plugins.py`, entry-point loading.
+7. ✅ **AI seam** — `AIProvider` protocol + reference providers + registry.
+8. ✅ **Docs + benchmarks** — README/GUIDE refresh (Phase 6),
+   `benchmarks/bench.py`. (`docs/ir.md` and `docs/plugins.md` remain folded
+   into `compiler.md` §3/§7 rather than separate files — recorded deviation.)
 
 ---
 
