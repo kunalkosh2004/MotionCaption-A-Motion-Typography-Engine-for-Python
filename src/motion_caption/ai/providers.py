@@ -39,23 +39,33 @@ def _build_prompt(payload: list[dict[str, object]]) -> str:
 
 
 def _parse_contribution(content: str) -> AIContribution:
-    """Parse a model response into an ``AIContribution`` (defensive)."""
-    payload = json.loads(content)
+    """Parse a model response into an ``AIContribution`` (defensive).
+
+    Raises ``ValueError`` with a clear message when the model output is not
+    valid JSON; malformed individual entries are dropped.
+    """
+    try:
+        payload = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"AI provider returned invalid JSON: {content[:80]!r}"
+        ) from exc
 
     importance: dict[int, float] = {}
     for key, value in (payload.get("importance") or {}).items():
         try:
             score = float(value)
+            index = int(key)
         except (TypeError, ValueError):
             continue
         if 0.0 <= score <= 1.0:
-            importance[int(key)] = score
+            importance[index] = score
 
     emphasis: dict[int, EmphasisMode] = {}
     for key, value in (payload.get("emphasis") or {}).items():
         try:
             emphasis[int(key)] = EmphasisMode(value)
-        except (TypeError, ValueError, KeyError):
+        except (TypeError, ValueError):
             continue
 
     splits: list[list[int]] = []

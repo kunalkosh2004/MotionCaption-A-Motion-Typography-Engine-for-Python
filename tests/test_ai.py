@@ -47,8 +47,10 @@ class TestAIProtocol:
         assert annotated.llm_annotations.theme == "music_video"
         assert request.llm_annotations is None  # original untouched
 
-    def test_ai_registry_empty_by_default(self):
-        assert AI_REGISTRY.keys == []
+    def test_ai_registry_has_builtin_providers(self):
+        assert sorted(AI_REGISTRY.keys) == ["gemini", "openai"]
+        assert AI_REGISTRY.get("openai").name == "openai"
+        assert AI_REGISTRY.get("gemini").name == "gemini"
 
 
 class TestParseContribution:
@@ -72,17 +74,31 @@ class TestParseContribution:
     def test_ignores_malformed_entries(self):
         content = json.dumps(
             {
-                "importance": {"0": 2.5, "1": "x"},
-                "emphasis": {"2": "bogus"},
-                "splits": [[], [0, "a"]],
+                "importance": {"0": 2.5, "1": "x", "x": 0.5, "2": 0.8},
+                "emphasis": {"3": "bogus", "4": "high"},
+                "splits": [[], [0, "a"], [1, 2]],
                 "theme": 42,
             }
         )
         contribution = providers._parse_contribution(content)
+        assert contribution.importance == {2: 0.8}  # non-numeric key/value dropped
+        assert contribution.emphasis == {4: EmphasisMode.HIGH}
+        assert contribution.splits == [[1, 2]]
+        assert contribution.theme is None
+
+    def test_empty_payload_parses_to_all_none(self):
+        contribution = providers._parse_contribution("{}")
         assert contribution.importance is None
         assert contribution.emphasis is None
         assert contribution.splits is None
         assert contribution.theme is None
+        assert contribution.emotion is None
+
+    def test_invalid_json_raises_clear_error(self):
+        with pytest.raises(ValueError, match="invalid JSON"):
+            providers._parse_contribution("not json")
+        with pytest.raises(ValueError, match="invalid JSON"):
+            providers._parse_contribution("")
 
 
 class TestOpenAIProvider:
