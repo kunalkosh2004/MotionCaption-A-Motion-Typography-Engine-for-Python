@@ -71,6 +71,16 @@ class TestCompiledThemeCache:
         b = cache.resolve(other, fonts)
         assert a is not b
 
+    def test_lru_eviction(self, any_font):
+        cache = CompiledThemeCache(size=2)
+        fonts = FontManager()
+        first = cache.resolve(_theme(any_font), fonts)
+        second = cache.resolve(_theme(any_font).model_copy(update={"name": "b"}), fonts)
+        cache.resolve(_theme(any_font).model_copy(update={"name": "c"}), fonts)
+        # 'first' was evicted when 'third' was inserted; 'second' is still hot
+        assert cache.resolve(_theme(any_font).model_copy(update={"name": "b"}), fonts) is second
+        assert cache.resolve(_theme(any_font), fonts) is not first
+
     def test_invalidate(self, any_font):
         cache = CompiledThemeCache()
         spec = _theme(any_font)

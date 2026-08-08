@@ -38,6 +38,10 @@ class CompiledThemeCache:
         self._entries: OrderedDict[tuple[str, tuple[str, ...]], ResolvedTheme] = OrderedDict()
 
     def resolve(self, spec: ThemeSpec, fonts: FontManager) -> ResolvedTheme:
+        """Resolve (or fetch) a theme. The returned ``ResolvedTheme`` is shared
+        cache state — treat it as read-only. Stages only read it today; a
+        future stage must copy before mutating.
+        """
         key = (_spec_digest(spec), _catalog_key(fonts))
         cached = self._entries.get(key)
         if cached is not None:

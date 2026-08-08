@@ -124,6 +124,14 @@ def pace(ctx: CompileContext) -> None:
 
 
 def resolve_theme_stage(ctx: CompileContext) -> None:
+    """Resolve the theme spec into a concrete theme.
+
+    The cache is injected by the ``Compiler`` (composition boundary), never
+    owned by the stage; the ``theme_cache is None`` fallback keeps the stage
+    usable standalone. This is a documented exception to "caches wrap stage
+    invocation in the Compiler" — the cache object lives in the Compiler and
+    is only *passed through* the context.
+    """
     assert ctx.theme_spec is not None
     if ctx.theme_cache is not None:
         ctx.theme = ctx.theme_cache.resolve(ctx.theme_spec, ctx.fonts)
