@@ -154,6 +154,9 @@ class GeminiProvider:
     name = "gemini"
 
     def __init__(self, api_key: str | None = None, *, model: str = "gemini-2.5-flash") -> None:
+        # 2.5-flash is the default because several API keys (e.g. new AI
+        # Studio keys) carry zero free-tier quota on the older 2.0-flash;
+        # pass model= to override for a different region/plan.
         self.api_key = api_key
         self.model = model
 

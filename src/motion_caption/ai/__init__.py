@@ -28,6 +28,11 @@ def annotate(request: CaptionRequest, provider: AIProvider) -> CaptionRequest:
 
     The original request is untouched, so deterministic pipelines can keep a
     clean request and annotate a disposable copy.
+
+    Note: this performs a **live provider call** — call it once and read
+    ``result.llm_annotations`` from the returned copy. Calling it twice with
+    a stochastic provider yields two independent (possibly different)
+    annotations.
     """
     return request.model_copy(update={"llm_annotations": provider.annotate(request)})
 

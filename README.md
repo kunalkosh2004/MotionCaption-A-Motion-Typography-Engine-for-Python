@@ -116,11 +116,20 @@ onto the request:
 ```python
 from motion_caption.ai import annotate, AI_REGISTRY
 
-annotated = annotate(request, AI_REGISTRY.get("openai"))  # needs an API key
+annotated = annotate(request, AI_REGISTRY.get("gemini"))  # reads GEMINI_API_KEY
 timeline = compile(annotated)
 ```
 
-Without a provider, rule-based segmentation and emphasis are the fallback.
+Set the key before running (nothing loads `.env` automatically):
+
+```bash
+echo 'GEMINI_API_KEY=your-key' > .env   # .env is gitignored
+set -a; source .env; set +a
+```
+
+`GeminiProvider` defaults to `gemini-2.5-flash` (some keys carry no quota on
+older models); override with `GeminiProvider(model=...)`. Without a
+provider, rule-based segmentation and emphasis are the fallback.
 
 ## Extending
 
