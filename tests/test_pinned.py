@@ -56,3 +56,35 @@ def test_pinned_compiler_is_deterministic(pinned_compiler: Compiler) -> None:
 def test_pinned_helpers_have_no_pytest_dependency() -> None:
     # The benchmark script reuses these helpers outside pytest.
     assert isinstance(pinned.pinned_font_ref(), FontRef)
+
+
+def test_font_readers_are_closed_after_metadata_and_cmap(monkeypatch) -> None:
+    """fontTools lazy readers must release their file handles (no leaks).
+
+    The golden harness surfaces unclosed-file ``ResourceWarning``s at teardown;
+    this pins the fix: every lazy ``TTFont`` opened for metadata or glyph
+    coverage is closed once extraction completes.
+    """
+    from fontTools.ttLib import TTFont
+
+    from motion_caption.typography.fonts import _codepoints, _load_font_metadata
+
+    # Force fresh reader creation (the metadata/cmap caches are keyed by path).
+    _load_font_metadata.cache_clear()
+    _codepoints.cache_clear()
+
+    closed: list[TTFont] = []
+    original_close = TTFont.close
+
+    def tracking_close(self: TTFont) -> None:
+        closed.append(self)
+        original_close(self)
+
+    monkeypatch.setattr(TTFont, "close", tracking_close)
+
+    manager = pinned.pinned_font_manager()
+    face = manager.resolve(pinned.pinned_font_ref())
+    assert face is not None
+    assert manager.glyph_supported(face, "A") is True
+
+    assert len(closed) >= 2, "metadata and cmap readers were not both closed"

@@ -8,6 +8,7 @@ scanned at import time.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import sys
@@ -98,40 +99,43 @@ class FontFile:
 def _load_font_metadata(path: str) -> tuple[FontFile, ...]:
     """Parse font metadata for every face in a file. Cache-safe."""
     source = Path(path)
-    if source.suffix.lower() == ".ttc":
-        try:
+    try:
+        if source.suffix.lower() == ".ttc":
             from fontTools.ttLib import TTCollection
 
-            collection = TTCollection(str(source), lazy=True)
-            faces = list(collection.fonts)
-        except Exception:
-            return ()
-    else:
-        try:
+            faces = list(TTCollection(str(source), lazy=True).fonts)
+        else:
             from fontTools.ttLib import TTFont
 
             faces = [TTFont(str(source), lazy=True)]
-        except Exception:
-            return ()
+    except Exception:
+        return ()
 
     result: list[FontFile] = []
-    for index, face in enumerate(faces):
-        try:
-            name_table = face["name"]
-            family = (
-                name_table.getDebugName(16)
-                or name_table.getDebugName(1)
-                or source.stem
+    try:
+        for index, face in enumerate(faces):
+            try:
+                name_table = face["name"]
+                family = (
+                    name_table.getDebugName(16)
+                    or name_table.getDebugName(1)
+                    or source.stem
+                )
+                subfamily = name_table.getDebugName(17) or name_table.getDebugName(2) or "Regular"
+                weight = _weight_of(face, subfamily)
+                italic = _italic_of(face, subfamily)
+                postscript = name_table.getDebugName(6) or ""
+            except Exception:
+                continue
+            result.append(
+                FontFile(source, index, family, subfamily, weight, italic, postscript)
             )
-            subfamily = name_table.getDebugName(17) or name_table.getDebugName(2) or "Regular"
-            weight = _weight_of(face, subfamily)
-            italic = _italic_of(face, subfamily)
-            postscript = name_table.getDebugName(6) or ""
-        except Exception:
-            continue
-        result.append(
-            FontFile(source, index, family, subfamily, weight, italic, postscript)
-        )
+    finally:
+        # Lazy fontTools readers hold the file open; release every handle
+        # after metadata is snapshotted (best-effort, never after reads).
+        for face in faces:
+            with contextlib.suppress(Exception):
+                face.close()
     return tuple(result)
 
 
@@ -284,8 +288,11 @@ def _codepoints(path: str, index: int) -> frozenset[int]:
         from fontTools.ttLib import TTFont
 
         face = TTFont(path, fontNumber=index, lazy=True)
-        cmap = face.getBestCmap() or {}
-        return frozenset(cmap.keys())
+        try:
+            cmap = face.getBestCmap() or {}
+            return frozenset(cmap.keys())
+        finally:
+            face.close()
     except Exception:
         return frozenset()
 
