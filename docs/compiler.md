@@ -343,7 +343,7 @@ read-only by downstream stages.
 ```python
 class Exporter(Protocol):
     name: str
-    def export(self, timeline: SubtitleTimeline, *, options: Any) -> ExporterResult: ...
+    def export(self, timeline: SubtitleTimeline) -> ExporterResult: ...
 
 @dataclass(frozen=True)
 class ExporterResult:
@@ -351,6 +351,12 @@ class ExporterResult:
     media_type: str = "text/plain"   # "application/json", "image/png", ...
     extension: str = "txt"
 ```
+
+Implementations may accept extra keyword options beyond ``timeline`` (e.g.
+``AssExporter.export(timeline, *, fps=30, style_name="Default")``,
+``JsonExporter.export(timeline, *, indent=2)``) — a call with only
+``timeline`` must always succeed. Exactly this protocol ships in
+``exporters/protocol.py``.
 
 Every exporter consumes **only** `SubtitleTimeline`. No exporter measures,
 picks fonts, lays out, or animates. The registry dispatches by name

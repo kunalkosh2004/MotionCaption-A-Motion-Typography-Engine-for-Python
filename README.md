@@ -85,14 +85,25 @@ json_timeline = EXPORTER_REGISTRY.get("json").export(timeline).data
 The pre-compiler APIs keep working and now compile internally:
 
 ```python
-from motion_caption import CaptionRenderer, RenderOptions, resolve_theme, build_ass
+from motion_caption import (
+    AssOptions,
+    Canvas,
+    CaptionRenderer,
+    ResolutionContext,
+    build_ass,
+    load_theme,
+    resolve_theme,
+)
 
 canvas = Canvas.from_standard("1080p")
+ctx = ResolutionContext(canvas=canvas.resolution)
 theme = resolve_theme(load_theme("clean"))
 segments = [...]                       # Segment/Word objects as before
 frame = CaptionRenderer().render_frame(segments, theme, ctx, canvas, t=1.0)
 ass_text = build_ass(segments, theme, ctx, canvas, options=AssOptions())
 ```
+
+(Full runnable versions of both paths are in `GUIDE.md` §3.)
 
 ## AI is optional
 
