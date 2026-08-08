@@ -30,10 +30,12 @@ already resolved in the IR. Deterministic by construction — identical input
 → identical output bytes, which is why golden frames and timeline snapshots
 are checked into the test suite.
 
-Design contracts: [`docs/architecture.md`](docs/architecture.md) (principles
-and subsystem reference) and [`docs/compiler.md`](docs/compiler.md) (the
-compiler/IR contract). The [`GUIDE.md`](GUIDE.md) is the full developer
-guide and API reference.
+**How it works:** the single consolidated reference is
+[`GUIDE.md`](GUIDE.md) — architecture, compiler pipeline, IR, every
+subsystem, backends, AI, plugins, and the full API reference in one file.
+The design contracts live in [`docs/architecture.md`](docs/architecture.md)
+(principles) and [`docs/compiler.md`](docs/compiler.md) (the compiler/IR
+contract).
 
 ## Install
 

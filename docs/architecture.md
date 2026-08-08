@@ -7,12 +7,16 @@ animated subtitles for video editors.
 This document is the design contract. Every subsystem is implemented against
 it. Nothing here is decorative.
 
+> **Read this first:** [`GUIDE.md`](../GUIDE.md) is the single consolidated
+> how-it-works document (architecture, pipeline, IR, subsystems, API
+> reference). This file remains the contract for principles, subsystem
+> responsibilities and the roadmap.
+>
 > **Update (Phase 6):** the compiler-era design — `CaptionRequest`,
 > `SubtitleTimeline`, the compiler pipeline, exporter contract, plugin
 > aggregation and AI seam — is specified in
 > [`docs/compiler.md`](compiler.md), which supersedes the forward references
-> in §3–§4 and §11 below. This document remains the contract for principles,
-> subsystem responsibilities and the roadmap.
+> in §3–§4 and §11 below.
 
 ---
 

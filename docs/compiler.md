@@ -1,5 +1,9 @@
 # MotionCaption Compiler Architecture
 
+> **Read this first:** [`GUIDE.md`](../GUIDE.md) is the single consolidated
+> how-it-works document (architecture, pipeline, IR, subsystems, API
+> reference).
+>
 > Status: **implemented** (through Phase 6). This document is both the design
 > contract and the implementation reference; it supersedes the forward
 > references in `architecture.md`. Existing public APIs remain unchanged;
