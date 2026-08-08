@@ -7,6 +7,7 @@ for the design contract.
 from __future__ import annotations
 
 from motion_caption import (
+    ai,
     animations,
     easing,
     emphasis,
@@ -213,6 +214,7 @@ __all__ = [
     "WordItem",
     "WordTimestamp",
     "adjust_segments",
+    "ai",
     "analyze",
     "animate_segment",
     "animate_word",
