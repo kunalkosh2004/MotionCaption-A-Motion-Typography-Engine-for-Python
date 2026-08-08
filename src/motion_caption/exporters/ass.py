@@ -49,7 +49,23 @@ def _ass_time(seconds: float) -> str:
 
 
 def _ass_alpha(opacity: float) -> str:
-    return f"&H{round((1.0 - opacity) * 255):02X}&"
+    """
+    Convert opacity [0, 1] to ASS alpha.
+
+    ASS alpha:
+        00 = fully opaque
+        FF = fully transparent
+
+    Clamp the value so invalid values such as
+    -9 or 256 can never be emitted.
+    """
+    opacity = max(0.0, min(1.0, float(opacity)))
+
+    alpha = round((1.0 - opacity) * 255)
+
+    alpha = max(0, min(255, alpha))
+
+    return f"&H{alpha:02X}&"
 
 
 def _ass_rgb(color: Color) -> str:
