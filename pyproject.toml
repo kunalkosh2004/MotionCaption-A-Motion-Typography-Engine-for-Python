@@ -41,7 +41,7 @@ dev = [
     "ruff>=0.3",
 ]
 ai = [
-    "google-generativeai>=0.7",
+    "google-genai>=1.0",  # modern Gemini SDK; google-generativeai is EOL
     "openai>=1.0",
 ]
 whisper = ["whisperx>=0.3"]

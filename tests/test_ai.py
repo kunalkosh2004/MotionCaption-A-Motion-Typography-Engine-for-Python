@@ -94,6 +94,11 @@ class TestParseContribution:
         assert contribution.theme is None
         assert contribution.emotion is None
 
+    def test_parses_markdown_fenced_json(self):
+        content = '```json\n{"theme": "clean"}\n```'
+        contribution = providers._parse_contribution(content)
+        assert contribution.theme == "clean"
+
     def test_invalid_json_raises_clear_error(self):
         with pytest.raises(ValueError, match="invalid JSON"):
             providers._parse_contribution("not json")

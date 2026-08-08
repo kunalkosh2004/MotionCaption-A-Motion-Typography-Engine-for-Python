@@ -42,10 +42,17 @@ def _parse_contribution(content: str) -> AIContribution:
     """Parse a model response into an ``AIContribution`` (defensive).
 
     Raises ``ValueError`` with a clear message when the model output is not
-    valid JSON; malformed individual entries are dropped.
+    valid JSON; malformed individual entries are dropped. A markdown code
+    fence around the JSON (some providers wrap output in ```json blocks) is
+    tolerated.
     """
+    text = content.strip()
+    if text.startswith("```"):
+        text = text.strip("`").strip()
+        if text.lower().startswith("json"):
+            text = text[4:].strip()
     try:
-        payload = json.loads(content)
+        payload = json.loads(text)
     except json.JSONDecodeError as exc:
         raise ValueError(
             f"AI provider returned invalid JSON: {content[:80]!r}"
@@ -102,11 +109,21 @@ def _openai_complete(api_key: str, model: str, prompt: str) -> str:
 
 
 def _gemini_generate(api_key: str, model: str, prompt: str) -> str:
-    """Call the Google Generative AI API (SDK imported lazily)."""
-    import google.generativeai as genai
+    """Call the Gemini API through the modern ``google.genai`` SDK (lazy import).
 
-    genai.configure(api_key=api_key)
-    response = genai.GenerativeModel(model).generate_content(prompt)
+    ``response_mime_type="application/json"`` forces bare JSON output so the
+    response parses directly; no markdown fences are expected.
+    """
+    from google import genai
+
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=model,
+        contents=prompt,
+        config=genai.types.GenerateContentConfig(
+            response_mime_type="application/json"
+        ),
+    )
     return response.text or ""
 
 
@@ -136,7 +153,7 @@ class GeminiProvider:
 
     name = "gemini"
 
-    def __init__(self, api_key: str | None = None, *, model: str = "gemini-2.0-flash") -> None:
+    def __init__(self, api_key: str | None = None, *, model: str = "gemini-2.5-flash") -> None:
         self.api_key = api_key
         self.model = model
 
