@@ -93,7 +93,7 @@ from motion_caption.placement import (
     platform_safe_area,
 )
 from motion_caption.reading import adjust_segments, analyze, difficulty_of
-from motion_caption.render import CaptionRenderer, RenderOptions
+from motion_caption.render import CaptionRenderer, RenderOptions, TimelineRenderer
 from motion_caption.segmentation import (
     SegmentationConfig,
     Segmenter,
@@ -195,6 +195,7 @@ __all__ = [
     "TextMeasurer",
     "TextStyle",
     "ThemeSpec",
+    "TimelineRenderer",
     "Track",
     "Transcript",
     "Unit",
