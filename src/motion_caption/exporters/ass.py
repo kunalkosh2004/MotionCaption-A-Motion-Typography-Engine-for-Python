@@ -256,5 +256,8 @@ def build_ass(
     )
     timeline = default_compiler().compile(request)
     result = AssExporter().export(timeline, fps=options.fps, style_name=options.style_name)
-    assert isinstance(result.data, str)
+    if not isinstance(result.data, str):
+        raise TypeError(
+            f"ASS exporter produced non-text output: {type(result.data).__name__}"
+        )
     return result.data
