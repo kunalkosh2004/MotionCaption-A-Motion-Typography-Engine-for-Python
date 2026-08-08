@@ -296,7 +296,7 @@ giant registries anywhere.** The built-in registries:
 | `ANIMATION_REGISTRY` | `motion_caption.animations` | `none`, `fade`, `slide`, `pop`, `scale`, `bounce`, `spring`, `elastic`, `overshoot`, `ripple`, `rotate`, `blur`, `glow`, `karaoke`, `pulse` |
 | `PLACEMENT_REGISTRY` | `motion_caption.placement` | `bottom`, `top`, `center`, `face-aware` |
 | `SEGMENTATION_REGISTRY` | `motion_caption.segmentation` | `sentence`, `pauses`, `strict` |
-| `EMPHASIS_REGISTRY` | `motion_caption.emphasis` | rule-based scorer |
+| `EMPHASIS_REGISTRY` | `motion_caption.emphasis` | `rules` |
 | `EXPORTER_REGISTRY` | `motion_caption.exporters` | `ass`, `json` |
 | `AI_REGISTRY` | `motion_caption.ai` | `openai`, `gemini` |
 
@@ -322,8 +322,8 @@ segment durations and line lengths so on-screen text stays readable.
 
 ### 5.4 Easing (`motion_caption.easing`)
 
-Pure functions `(t: 0..1) -> eased`, including named cubic-béziers
-(ease-in/out/in-out), spring, elastic, bounce, overshoot, and step.
+Pure functions `(t: 0..1) -> eased`, including `linear`, `step`, `cubic-bezier`
+(named presets), `spring`, `elastic`, `bounce`, and `overshoot`.
 `compile_spec(EasingSpec) -> EasingFunction` turns a serializable spec into a
 callable — themes reference easings by identity, never by implementation.
 *Extensible via:* the `motion_caption.easings` entry point.
@@ -523,6 +523,8 @@ from motion_caption import (
 )
 
 # Compiler / IR / AI / plugins live in their own modules
+# (CaptionRequest / SubtitleTimeline are the same objects, re-exported
+#  at the top level from motion_caption.ir)
 from motion_caption.compiler import compile, Compiler
 from motion_caption.exporters import EXPORTER_REGISTRY, AssExporter, JsonExporter
 from motion_caption.ai import annotate, AI_REGISTRY, AIProvider
