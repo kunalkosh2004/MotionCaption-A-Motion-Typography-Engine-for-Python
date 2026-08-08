@@ -7,6 +7,13 @@ animated subtitles for video editors.
 This document is the design contract. Every subsystem is implemented against
 it. Nothing here is decorative.
 
+> **Update (Phase 6):** the compiler-era design — `CaptionRequest`,
+> `SubtitleTimeline`, the compiler pipeline, exporter contract, plugin
+> aggregation and AI seam — is specified in
+> [`docs/compiler.md`](compiler.md), which supersedes the forward references
+> in §3–§4 and §11 below. This document remains the contract for principles,
+> subsystem responsibilities and the roadmap.
+
 ---
 
 ## 1. Mission and Non-Goals
@@ -61,10 +68,11 @@ the rest of the package.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Composition root: CaptionEngine, CLI                            │
+│  Composition root: Compiler (motion_caption.compiler), CLI*      │
 ├─────────────────────────────────────────────────────────────────┤
-│  Interface layer: plugins/ (Registry + entry points)            │
-│   ── themes, animations, exporters, placements, ai providers    │
+│  Interface layer: plugins.py (Registry + entry points)          │
+│   ── themes, animations, easings, exporters, placements,        │
+│      segmentation, emphasis, ai providers                       │
 ├─────────────────────────────────────────────────────────────────┤
 │  Application layer (pure logic, no I/O)                         │
 │   segmentation · emphasis · reading · easing · animation        │
@@ -91,22 +99,24 @@ motion_caption/
     segmentation/  # transcript → subtitle segments (grammar, rhythm, reading)
     emphasis/      # word importance scoring (rule-based + AI override)
     reading/       # reading speed, difficulty, density analysis
-    animation/     # keyframe timelines → animated property curves
+    animations/    # animation templates → per-word keyframe timelines
     layout/        # measured blocks → positioned, aligned regions
     placement/     # safe areas, platform UI avoidance, face-aware placement
-    themes/        # theme model + built-in theme catalog (30+)
-    renderer/      # rasterization and compositing (Pillow/numpy)
-    exporters/     # ASS, JSON timeline, FFmpeg filters, PNG sequence
-    plugins/       # Registry + importlib entry-point loading
-    ai/            # provider protocols (Gemini/OpenAI/Claude/local)
-    cli/           # argparse CLI
-    utils/         # shared cache/threading/parallel helpers
-    engine.py      # CaptionEngine — composition root, public API
-    registry.py    # Registry base class
+    themes/        # theme model + built-in theme catalog
+    ir/            # CaptionRequest + SubtitleTimeline (the canonical IR)
+    compiler/      # pure stage pipeline: request → timeline (Compiler, cache)
+    render/        # dumb rasterizer (TimelineRenderer) + CaptionRenderer facade
+    exporters/     # Exporter protocol + ASS and JSON backends
+    ai/            # AIProvider protocol, registry, reference providers
+    plugins.py     # entry-point aggregation (load_plugins, PLUGIN_GROUPS)
+    registry.py    # Registry base class (thread-safe, aliases)
     canvas.py      # Canvas + standard resolutions
 ```
 
-Empty directories are only created when their subsystem lands, in roadmap order.
+Every directory above exists today. The composition root is
+`motion_caption.compiler.Compiler` (a `CLI` and a generic `CaptionEngine`
+facade remain roadmap items; the top-level `motion_caption` package exposes
+the whole API surface directly).
 
 ---
 
@@ -196,16 +206,19 @@ class MusicVideoTheme(Theme): ...
 themes.load_entry_points("motion_caption.themes")   # third-party themes
 ```
 
-Entry-point groups (declared for future subsystems):
+Entry-point groups (all wired in `motion_caption.plugins.PLUGIN_GROUPS`;
+`load_plugins()` loads them explicitly):
 
 | Group | Registers |
 |---|---|
-| `motion_caption.themes` | Theme classes |
-| `motion_caption.animations` | Animation strategy classes |
-| `motion_caption.easings` | Easing functions |
-| `motion_caption.exporters` | Exporter classes |
-| `motion_caption.placements` | Placement strategy classes |
-| `motion_caption.ai` | AI provider classes |
+| `motion_caption.themes` | ThemeSpec (via `THEME_REGISTRY`) |
+| `motion_caption.animations` | Animation templates |
+| `motion_caption.easings` | Easing factories |
+| `motion_caption.exporters` | `Exporter` classes |
+| `motion_caption.placements` | Placement strategies |
+| `motion_caption.segmentation` | Segmentation strategies |
+| `motion_caption.emphasis` | Emphasis scorers |
+| `motion_caption.ai` | `AIProvider` classes |
 
 ### 5.3 Resolution model
 
@@ -333,16 +346,19 @@ reviewed before the next begins.
 1. ✅ Architecture (this doc) + scaffold
 2. ✅ Core models: units, geometry, color, transcript, canvas, registry
 3. ✅ Typography engine: fonts, styles, measurement
-4. Easing + keyframe engine (canonical animation model)
-5. Theme engine + built-in theme catalog
-6. Segmentation engine
-7. Emphasis (rule-based) + reading engine
-8. Layout + placement (safe areas, face-aware)
-9. Animation strategies → keyframe timelines
-10. Renderer (Pillow/numpy) + ASS exporter
-11. JSON timeline, FFmpeg filter, PNG sequence exporters
-12. AI provider protocol + reference plugins
-13. CLI + docs + benchmarks
+4. ✅ Easing + keyframe engine (canonical animation model)
+5. ✅ Theme engine + built-in theme catalog
+6. ✅ Segmentation engine
+7. ✅ Emphasis (rule-based) + reading engine
+8. ✅ Layout + placement (safe areas, face-aware)
+9. ✅ Animation strategies → keyframe timelines
+10. ✅ Compiler pipeline + IR (`CaptionRequest` → `SubtitleTimeline`)
+11. ✅ Dumb renderer (`TimelineRenderer`) + ASS + JSON exporters
+    (FFmpeg filter / PNG sequence / Lottie / SVG remain future interpreters
+    behind the `Exporter` protocol — no core changes needed)
+12. ✅ AI provider protocol + reference providers (OpenAI, Gemini)
+13. ✅ Caching layer, plugin aggregation, golden/snapshot harness,
+    benchmarks, docs (CLI still a roadmap item)
 
 ---
 
@@ -360,17 +376,28 @@ reviewed before the next begins.
 
 ---
 
-## 11. Public API (target shape)
+## 11. Public API (implemented shape)
 
 ```python
-from motion_caption import CaptionEngine
+from motion_caption import CaptionRequest, CaptionRenderer, Transcript, WordTimestamp
+from motion_caption.compiler import compile
+from motion_caption.exporters import EXPORTER_REGISTRY
+from motion_caption.render import TimelineRenderer
 
-engine = CaptionEngine(theme="music_video")
-engine.render(transcript="words.json", output="captions.ass")
+# compiler-first (recommended)
+request = CaptionRequest(
+    transcript=Transcript(words=[WordTimestamp(text="hi", start=0.0, end=0.5), ...]),
+    theme="music_video",
+)
+timeline = compile(request)                     # -> SubtitleTimeline (IR)
+frame = TimelineRenderer().render_frame(timeline, t=0.3, canvas=canvas)
+ass = EXPORTER_REGISTRY.get("ass").export(timeline).data
 
-# or programmatic
-from motion_caption import CaptionEngine, Theme
-
-theme = Theme(...)
-engine = CaptionEngine(theme)
+# backward-compatible facades (compile internally)
+frame = CaptionRenderer().render_frame(segments, theme, ctx, canvas, t=0.3)
+ass_text = build_ass(segments, theme, ctx, canvas)
 ```
+
+A generic `CaptionEngine` facade (theme + file paths, as originally
+sketched) remains a future convenience; the concrete API above is what
+ships today.
