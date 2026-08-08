@@ -37,10 +37,10 @@ from pydantic import BaseModel, Field
 from motion_caption.animations import AnimationConfig
 from motion_caption.canvas import Canvas
 from motion_caption.compiler.engine import Compiler
-from motion_caption.ir.request import AIContribution, CaptionRequest, CompileOptions
+from motion_caption.compiler.request import request_from_segments
 from motion_caption.ir.timeline import SubtitleTimeline
 from motion_caption.layout import LayoutOptions
-from motion_caption.models.transcript import EmphasisMode, Segment, Transcript, WordTimestamp
+from motion_caption.models.transcript import Segment
 from motion_caption.models.units import ResolutionContext
 from motion_caption.placement import Face, PlacementConfig
 from motion_caption.render.timeline import TimelineRenderer
@@ -75,45 +75,15 @@ class CaptionRenderer:
         canvas: Canvas,
         options: RenderOptions,
     ) -> SubtitleTimeline:
-        transcript_words: list[WordTimestamp] = []
-        splits: list[list[int]] = []
-        importance: dict[int, float] = {}
-        emphasis: dict[int, EmphasisMode] = {}
-        index = 0
-        for segment in segments:
-            if not segment.words:
-                continue
-            start_index = index
-            for offset, word in enumerate(segment.words):
-                word_start = min(word.start, segment.start) if offset == 0 else word.start
-                word_end = (
-                    max(word.end, segment.end) if offset == len(segment.words) - 1 else word.end
-                )
-                transcript_words.append(
-                    WordTimestamp(text=word.text, start=word_start, end=word_end)
-                )
-                importance[index] = word.importance
-                emphasis[index] = word.emphasis
-                index += 1
-            splits.append(list(range(start_index, index)))
-        request = CaptionRequest(
-            transcript=Transcript(language="en", words=transcript_words),
-            faces=list(options.faces),
-            theme=theme.spec,
-            llm_annotations=AIContribution(
-                splits=splits,
-                importance=importance,
-                emphasis=emphasis,
-            ),
-            resolution=canvas.resolution,
-            design=ctx.design,
-            options=CompileOptions(
-                strategy="strict",
-                reading=False,
-                animation=options.animation,
-                layout=options.layout,
-                placement=options.placement,
-            ),
+        request = request_from_segments(
+            segments,
+            theme,
+            ctx,
+            canvas,
+            layout=options.layout,
+            placement=options.placement,
+            animation=options.animation,
+            faces=options.faces,
         )
         return self._compiler.compile(request)
 
