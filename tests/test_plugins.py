@@ -39,7 +39,7 @@ def test_load_plugins_no_third_party_is_idempotent():
 
 def test_load_plugins_selected_group():
     assert load_plugins(groups=["motion_caption.easings"]) == 0
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match="available"):
         load_plugins(groups=["motion_caption.unknown"])
 
 

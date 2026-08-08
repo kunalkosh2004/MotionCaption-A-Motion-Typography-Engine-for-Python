@@ -38,7 +38,18 @@ def load_plugins(groups: Iterable[str] | None = None) -> int:
     overwrite built-ins (``Registry.load_entry_points`` uses ``overwrite=True``)
     and repeated calls are safe.
     """
-    selected = PLUGIN_GROUPS if groups is None else {g: PLUGIN_GROUPS[g] for g in groups}
+    if groups is None:
+        selected = PLUGIN_GROUPS
+    else:
+        selected = {}
+        for group in groups:
+            registry = PLUGIN_GROUPS.get(group)
+            if registry is None:
+                available = ", ".join(sorted(PLUGIN_GROUPS))
+                raise KeyError(
+                    f"no entry-point group {group!r}; available: {available}"
+                )
+            selected[group] = registry
     total = 0
     for group, registry in selected.items():
         total += registry.load_entry_points(group)
