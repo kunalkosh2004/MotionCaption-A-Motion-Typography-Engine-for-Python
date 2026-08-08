@@ -4,18 +4,34 @@
 
 ---
 
-## 1. How It Works (The Pipeline)
+## 1. How It Works (The Compiler Pipeline)
 
-MotionCaption follows a strict, stateless unidirectional rendering pipeline:
+MotionCaption behaves like a **compiler**: one serializable input, a
+canonical intermediate representation, and interchangeable backends.
 
-1. **Transcript Input**: Raw word-timed tokens (`WordTimestamp`) with `start`, `end`, and `text`.
-2. **Segmentation (`segmentation`)**: Chunks word timestamps into grammatical, rhythm-aware caption blocks (`Segment`) constrained by max word counts and durations.
-3. **Emphasis (`emphasis`)**: Analyzes word importance (using part-of-speech heuristics and reading speed) to assign emphasis modes (`NONE`, `LOW`, `MEDIUM`, `HIGH`, `KARAOKE`).
-4. **Themes (`themes`)**: Supplies typographic personalities (font stacks, base styles, glow/shadow/stroke), emphasis appearances, and easing identities. `resolve_theme()` binds spec to fonts.
-5. **Animation & Keyframes (`animations`, `easing`, `models.keyframe`)**: Maps animation templates (e.g., `fade`, `pop`, `karaoke`, `spring`) to canonical per-property keyframe timelines (`RegionTimeline`).
-6. **Typography & Measurement (`typography`)**: Measures glyph dimensions and bounds using Pillow and font managers.
-7. **Layout & Placement (`layout`, `placement`)**: Positions measured blocks on the output canvas adhering to text alignments, safe areas (TikTok, Reels, Shorts), and facial-avoidance zones.
-8. **Rasterization / Export (`render`, `exporters`)**: Samples canonical timelines at time `t` to composite RGBA frames (`CaptionRenderer`) or compiles subtitle events (`build_ass`).
+1. **`CaptionRequest` (input)**: Everything the pipeline needs — word-timed
+   transcript, theme (a `ThemeSpec` or registry name), resolution/design,
+   faces, safe area, platform, speaker tracks, and optional precomputed AI
+   annotations (`llm_annotations`). One object, fully serializable.
+2. **Compiler stages (pure, replaceable)**: The `Compiler` runs segmentation
+   (grammar/rhythm-aware `Segment` blocks), emphasis (importance →
+   `EmphasisMode`), reading-paced durations, theme resolution (fonts + easing
+   identities bound), typography resolution (every `Length` → design px),
+   layout (measure + wrap + align), placement (safe areas, face avoidance,
+   speaker bias), and animation (per-word `AnimationTrack` keyframes).
+3. **`SubtitleTimeline` (canonical IR)**: The resolved, deterministic output
+   of the compiler — measured word boxes, resolved typography, keyframed
+   motion, and final placement regions, all in design-space pixels with a
+   single `scale` factor. This is the **single source of truth**.
+4. **Backends consume the IR**: `TimelineRenderer` samples it into RGBA
+   frames (`CaptionRenderer` is a backward-compatible facade that compiles
+   internally and delegates), and exporters (`AssExporter`, `JsonExporter`)
+   interpret it into `.ass` / JSON. No backend measures, picks fonts,
+   lays out, or animates — everything is already resolved.
+
+The legacy object pipeline (transcript → segments → words → keyframed
+regions) still exists underneath — the compiler's stages are exactly that
+chain, unified behind the IR.
 
 ---
 
@@ -24,24 +40,74 @@ MotionCaption follows a strict, stateless unidirectional rendering pipeline:
 ### Importing Top-Level API
 ```python
 from motion_caption import (
+    AssOptions,
     Canvas,
     CaptionRenderer,
+    CaptionRequest,
     RenderOptions,
     Segment,
+    SubtitleTimeline,
     Transcript,
     Word,
     WordTimestamp,
-    segment_transcript,
-    resolve_theme,
-    load_theme,
     build_ass,
-    AssOptions,
+    load_theme,
+    resolve_theme,
+    segment_transcript,
 )
+
+# Compiler / IR / AI / plugins live in their own modules
+from motion_caption.compiler import compile, Compiler
+from motion_caption.exporters import EXPORTER_REGISTRY, AssExporter, JsonExporter
+from motion_caption.ai import annotate, AI_REGISTRY
+from motion_caption.plugins import load_plugins
 ```
 
 ---
 
 ## 3. Usage Example
+
+### 3a. Compiler-first (recommended)
+
+Compile one `CaptionRequest` into a `SubtitleTimeline`, then feed any
+backend — rendering and both exporters share the same compiled artifact:
+
+```python
+from motion_caption import Canvas, CaptionRequest, Transcript, WordTimestamp
+from motion_caption.compiler import compile
+from motion_caption.exporters import EXPORTER_REGISTRY
+from motion_caption.render import TimelineRenderer
+
+# 1. One serializable request
+request = CaptionRequest(
+    transcript=Transcript(
+        words=[
+            WordTimestamp(text="Hello", start=0.0, end=0.8),
+            WordTimestamp(text="motion", start=0.9, end=1.6),
+            WordTimestamp(text="typography", start=1.7, end=2.5),
+        ]
+    ),
+    theme="music_video",  # a ThemeSpec, a registry name, or None
+)
+
+# 2. Compile once
+canvas = Canvas.from_standard("1080p")
+timeline = compile(request)
+
+# 3. Any backend consumes the same timeline
+frame = TimelineRenderer().render_frame(timeline, t=1.2, canvas=canvas)
+frame.save("frame_1.2s.png")
+
+frames = TimelineRenderer().render_sequence(timeline, canvas, fps=30)
+
+ass = EXPORTER_REGISTRY.get("ass").export(timeline).data
+json_timeline = EXPORTER_REGISTRY.get("json").export(timeline).data
+```
+
+### 3b. Backward-compatible facade
+
+The original segment/theme API still works; it compiles internally and
+delegates to the same `TimelineRenderer`:
 
 ```python
 from motion_caption import (
@@ -55,14 +121,10 @@ from motion_caption import (
     resolve_theme,
 )
 
-# 1. Define output canvas & context
 canvas = Canvas.from_standard("1080p")
 ctx = ResolutionContext(canvas=canvas.resolution)
-
-# 2. Load or build a theme
 theme = resolve_theme(ThemeSpec(name="demo"))
 
-# 3. Create caption segments with word timestamps
 segments = [
     Segment(
         text="Hello motion typography",
@@ -76,18 +138,12 @@ segments = [
     )
 ]
 
-# 4. Render a single frame at t = 1.2s
 renderer = CaptionRenderer()
 frame = renderer.render_frame(segments, theme, ctx, canvas, t=1.2)
 frame.save("frame_1.2s.png")
 
-# Or render an entire sequence of frames at 30 fps
 frames = renderer.render_sequence(
-    segments,
-    theme,
-    ctx,
-    canvas,
-    options=RenderOptions(fps=30),
+    segments, theme, ctx, canvas, options=RenderOptions(fps=30)
 )
 ```
 
@@ -188,3 +244,53 @@ frames = renderer.render_sequence(
 - `build_ass(segments, theme, ctx, canvas, options=None) -> str`: backward-compatible facade — compiles a `CaptionRequest` internally and delegates to `AssExporter`.
 - `AssOptions(fps=30, layout=..., placement=..., animation=..., faces=..., style_name="Default")`: ASS exporter tuning (`layout`/`placement`/`animation`/`faces` configure the compile; `fps`/`style_name` tune the output).
 - `EXPORTER_REGISTRY`: `Registry[Exporter]` dispatching by name (`"ass"`, `"json"`); the `motion_caption.exporters` entry-point group loads third-party backends.
+
+### Compiler (`motion_caption.compiler`)
+- `Compiler(font_manager=None, cache_size=64)`: Composition root. Owns the
+  timeline cache (sha256 of `CaptionRequest.model_dump_json`) and the
+  `CompiledThemeCache`; `compile(request) -> SubtitleTimeline`;
+  `invalidate()` clears both.
+- `compile(request)`: Compile through the process-wide shared `Compiler`.
+- `default_compiler()`: The shared instance.
+- `request_from_segments(segments, theme, ctx, canvas, layout=...,
+  placement=..., animation=..., faces=...)`: Builds a `CaptionRequest` from
+  the legacy segment/theme objects (used by `CaptionRenderer` and `build_ass`
+  internally).
+- `CompiledThemeCache(size=64)`: LRU of resolved themes keyed by (spec
+  digest, catalog directories); themes are shared and treated as read-only.
+
+### The IR (`motion_caption.ir`)
+- `SubtitleTimeline(format_version, metadata, resolution, design, scale,
+  styles, tracks)`: The canonical IR — the single source of truth for every
+  backend. Helpers: `events`, `words`, `start`, `end`, `duration`,
+  `events_at(t)`, `words_at(t)`, `style(name)`.
+- `Track(name, speaker, events)`: One speaker/layer lane of `SubtitleEvent`s.
+- `SubtitleEvent(start, end, text, style, region, words, speaker, layer)`: One
+  caption on screen; `sample(t)` returns the per-word `Region`s.
+- `WordEvent(text, start, end, importance, emphasis, box, typography,
+  animation)`: One word with its measured `box`, `ResolvedTypography`, and
+  `AnimationTrack`; `region_at(t)` samples its motion.
+- `StyleTrack(name, typography)` / `PlacementRegion(box, anchor, speaker,
+  layer)` / `AnimationTrack(tracks, phases)` / `KeyframeTrack(kind,
+  timeline)`.
+
+### AI seam (`motion_caption.ai`)
+- `AIProvider` (protocol): `annotate(request) -> AIContribution`. Providers
+  run **outside** the compiler; core never imports an SDK.
+- `annotate(request, provider) -> CaptionRequest`: Returns a copy with
+  `llm_annotations` attached (the original is untouched — determinism is
+  preserved).
+- `AI_REGISTRY`: Built-in providers (`"openai"`, `"gemini"`) plus any from
+  the `motion_caption.ai` entry-point group.
+- `OpenAIProvider(api_key=None)` / `GeminiProvider(api_key=None)`: Reference
+  implementations with **lazy SDK imports** (install the `ai` extra); API
+  keys fall back to `OPENAI_API_KEY` / `GEMINI_API_KEY`. Their JSON output
+  feeds `AIContribution(importance, emphasis, splits, theme, emotion)`.
+
+### Plugins (`motion_caption.plugins`)
+- `PLUGIN_GROUPS`: Maps the eight entry-point groups to their registries
+  (`themes`, `animations`, `easings`, `exporters`, `placements`,
+  `segmentation`, `emphasis`, `ai`).
+- `load_plugins(groups=None)`: Explicit, opt-in loading of registered
+  entry-point plugins (nothing is scanned at import time). Call it once at
+  startup if you ship plugins.
