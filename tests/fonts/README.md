@@ -13,6 +13,12 @@ identically on every machine and in CI — no dependence on system fonts.
 
 The snapshot/golden tests reference this file by **path** (via
 `tests/pinned.py`), so resolution never touches the system font catalog.
+
+**Version sensitivity:** the committed golden PNG is byte-stable only for the
+Pillow/FreeType versions that generated it. If a fresh environment (e.g. a
+newer Pillow in CI) reports a golden-frame mismatch, regenerate the PNG there
+— a pixel-identical result across Pillow versions is not guaranteed.
+
 Regenerate the snapshots after intentionally changing rendering output with:
 
 ```sh

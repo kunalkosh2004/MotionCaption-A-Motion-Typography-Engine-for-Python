@@ -29,3 +29,12 @@ warmup** to ignore one-off catalog/cache warm-up.
 The numbers are for relative regression tracking — compare commits, not
 machines. A meaningful guardrail: `compile-warm` and `frame` should both be
 well under one millisecond on any modern laptop.
+
+Two honest caveats:
+
+- `compile-warm` is *not* a pure cache lookup: `Compiler` re-serializes the
+  request (`model_dump_json`) to compute the cache-key digest on every call,
+  so that cost is included in the number.
+- `export-ass` has been the slowest stage on this machine (~60 ms for 60
+  words / 15 events) — a known hotspot worth profiling if ASS export ever
+  needs to be interactive.

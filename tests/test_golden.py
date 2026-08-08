@@ -65,7 +65,7 @@ def test_frame_draws_glyphs_and_background_box(pinned_compiler: Compiler) -> Non
             r, g, b, a = pixels[x, y]
             if a == 0:
                 continue
-            if abs(r - 0x11) <= 12 and abs(g - 0x11) <= 12 and abs(b - 0x11) <= 12:
+            if a > 100 and abs(r - 0x11) <= 12 and abs(g - 0x11) <= 12 and abs(b - 0x11) <= 12:
                 box_pixels += 1
             if b > 180 and g > 150 and r < 90:
                 glow_pixels += 1

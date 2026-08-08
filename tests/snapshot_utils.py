@@ -32,11 +32,14 @@ def snapshot_path(*parts: str) -> Path:
 
 
 def _compare(path: Path, data: bytes) -> None:
-    if update_enabled() or not path.exists():
+    if update_enabled():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
-        if update_enabled():
-            return
+        # Visible in CI logs so an accidentally-set env var can't silently
+        # mask a regression while tests stay green.
+        print(f"REWRITING snapshot: {path}")
+        return
+    if not path.exists():
         pytest.fail(
             f"snapshot missing: {path}\n"
             f"set {_UPDATE_ENV}=1 to generate it"
