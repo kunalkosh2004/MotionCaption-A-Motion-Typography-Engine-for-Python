@@ -224,6 +224,14 @@ class RegionTimeline(BaseModel):
         self.tracks[track.kind] = track
         return self
 
+    @property
+    def start(self) -> float:
+        return min((track.start for track in self.tracks.values()), default=0.0)
+
+    @property
+    def end(self) -> float:
+        return max((track.end for track in self.tracks.values()), default=0.0)
+
     def sample(self, t: float) -> Region:
         data: dict[str, Any] = {}
         for kind, track in self.tracks.items():
