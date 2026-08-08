@@ -32,7 +32,13 @@ from motion_caption.animations import (
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.easing import EasingKind, EasingSpec, compile_spec
 from motion_caption.emphasis import apply_emphasis, importance_to_mode
-from motion_caption.exporters import EXPORTER_REGISTRY, AssOptions, build_ass
+from motion_caption.exporters import (
+    EXPORTER_REGISTRY,
+    AssOptions,
+    Exporter,
+    ExporterResult,
+    build_ass,
+)
 from motion_caption.ir import (
     AIContribution,
     AnimationTrack,
@@ -141,6 +147,8 @@ __all__ = [
     "EmphasisMode",
     "EasingKind",
     "EasingSpec",
+    "Exporter",
+    "ExporterResult",
     "EXPORTER_REGISTRY",
     "Face",
     "FillSpec",
