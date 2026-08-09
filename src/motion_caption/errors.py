@@ -53,6 +53,10 @@ class InvalidVideoError(FFmpegError):
     """The input is not a valid, decodable media file."""
 
 
+class RequestIOError(MotionCaptionError):
+    """A request/transcript/timeline file could not be read or written."""
+
+
 class ExportError(MotionCaptionError):
     """A backend failed to export a timeline."""
 

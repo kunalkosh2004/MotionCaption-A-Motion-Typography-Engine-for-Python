@@ -12,6 +12,7 @@ from motion_caption import (
     easing,
     emphasis,
     exporters,
+    io,
     ir,
     layout,
     models,
@@ -42,6 +43,7 @@ from motion_caption.errors import (
     InvalidVideoError,
     MotionCaptionError,
     PluginError,
+    RequestIOError,
     TranscriptionError,
 )
 from motion_caption.exporters import (
@@ -196,6 +198,7 @@ __all__ = [
     "RegionTimeline",
     "Registry",
     "RenderOptions",
+    "RequestIOError",
     "ResolvedBackground",
     "ResolvedBorder",
     "ResolvedFont",
@@ -248,6 +251,7 @@ __all__ = [
     "emphasis",
     "exporters",
     "importance_to_mode",
+    "io",
     "ir",
     "layout",
     "lay_out",
