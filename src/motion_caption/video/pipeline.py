@@ -40,6 +40,7 @@ from motion_caption.ir.timeline import SubtitleTimeline
 from motion_caption.models import Transcript
 from motion_caption.placement import Face
 from motion_caption.render import TimelineRenderer
+from motion_caption.video.faces import FaceDetector, detect_faces_for_video
 from motion_caption.video.ffmpeg import FFmpegVideoProcessor, VideoMetadata, temporary_directory
 from motion_caption.video.transcript import (
     TranscriptProvider,
@@ -90,6 +91,7 @@ class CaptionVideoPipeline:
         resolution: tuple[int, int] | str | None = None,
         ai_provider: AIProvider | str | None = None,
         transcript_provider: TranscriptProvider | None = None,
+        face_detector: FaceDetector | None = None,
         ffmpeg: FFmpegVideoProcessor | None = None,
         compiler: Compiler | None = None,
         renderer: TimelineRenderer | None = None,
@@ -101,6 +103,7 @@ class CaptionVideoPipeline:
         self.resolution = resolution
         self.ai_provider = ai_provider
         self.transcript_provider = transcript_provider
+        self.face_detector = face_detector
         self.ffmpeg = ffmpeg or FFmpegVideoProcessor()
         self.compiler = compiler or default_compiler()
         self.renderer = renderer or TimelineRenderer()
@@ -191,8 +194,18 @@ class CaptionVideoPipeline:
                 transcript=transcript, provider=provider, audio_path=audio_path
             )
 
+            # 2b. Face detection (optional, sampled): union avoidance zones.
+            detected_faces = list(faces or [])
+            if self.face_detector is not None and not detected_faces:
+                detected_faces = detect_faces_for_video(
+                    self.ffmpeg,
+                    self.face_detector,
+                    input_path,
+                    duration=metadata.duration,
+                )
+
             # 3. Optional AI annotation through the existing seam.
-            request = self._build_request(resolved, faces, metadata.resolution)
+            request = self._build_request(resolved, detected_faces, metadata.resolution)
             annotated, llm_annotated = self._annotate(request)
 
             # 4. Compile once; the timeline is the single source of truth.

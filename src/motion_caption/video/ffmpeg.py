@@ -288,6 +288,37 @@ class FFmpegVideoProcessor:
         )
         return target
 
+    # -- frame extraction ----------------------------------------------------
+
+    def extract_frame(
+        self,
+        video_path: str | Path,
+        time: float,
+        output: str | Path,
+    ) -> Path:
+        """Extract a single frame at ``time`` seconds to a PNG.
+
+        Used for sampling-based face detection and preview frames; the seek is
+        done by decode time (``-ss`` before the input) so it is fast.
+        """
+        target = Path(output)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        self._run(
+            [
+                self._require_ffmpeg(),
+                "-y",
+                "-ss",
+                f"{max(0.0, time):g}",
+                "-i",
+                str(video_path),
+                "-frames:v",
+                "1",
+                str(target),
+            ],
+            check_file=Path(video_path),
+        )
+        return target
+
     # -- frames → video ------------------------------------------------------
 
     def render_frames_to_video(

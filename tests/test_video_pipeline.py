@@ -66,6 +66,14 @@ class FakeFFmpeg:
         target.write_bytes(b"final-mp4")
         return target
 
+    def extract_frame(self, video, time, output) -> Path:
+        self.calls.append(("extract_frame", str(video), time))
+        target = Path(output)
+        from PIL import Image
+
+        Image.new("RGB", (16, 16), (5, 5, 5)).save(target, format="PNG")
+        return target
+
 
 class RecordingCompiler(Compiler):
     """Records every request and compiles for real (deterministic)."""
@@ -335,3 +343,25 @@ def test_faces_pass_through(fake_ffmpeg, compiler, tmp_path) -> None:
     )
     pipeline.process(input_video, faces=[face])
     assert compiler.requests[0].faces == [face]
+
+
+def test_face_detector_populates_request(fake_ffmpeg, compiler, tmp_path) -> None:
+    from motion_caption.models import Box
+
+    class _Detector:
+        def detect(self, frame):
+            return [Box(5.0, 5.0, 55.0, 55.0)]
+
+    input_video = tmp_path / "clip.mp4"
+    input_video.write_bytes(b"input")
+    pipeline = CaptionVideoPipeline(
+        theme="clean",
+        transcript_provider=FakeTranscriptProvider("hello world"),
+        face_detector=_Detector(),
+        ffmpeg=fake_ffmpeg,
+        compiler=compiler,
+        fps=10,
+    )
+    pipeline.process(input_video)
+    assert len(compiler.requests[0].faces) == 1
+    assert compiler.requests[0].faces[0].box.left == 5.0
