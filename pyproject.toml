@@ -46,6 +46,9 @@ ai = [
 ]
 whisper = ["whisperx>=0.3"]
 
+[project.scripts]
+motion-caption = "motion_caption.cli:main"
+
 [project.urls]
 Documentation = "https://github.com/motion-caption/motion-caption"
 Repository = "https://github.com/motion-caption/motion-caption"
