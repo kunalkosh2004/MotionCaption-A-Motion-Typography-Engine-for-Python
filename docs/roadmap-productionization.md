@@ -1,6 +1,6 @@
 # Productionization Roadmap — Audit & Plan
 
-Status: **Milestones 0–10 complete** · baseline: **499 tests passing, ruff clean**
+Status: **All milestones complete** · **501 tests passing, ruff clean**
 
 This document records the audit performed before the productionization effort and
 the milestone-by-milestone plan. Each milestone lands as its own commit after
@@ -68,9 +68,24 @@ working:
 | 8 | JSON request IO | `motion_caption/io.py`: load/save request, transcript, timeline; typed errors | ✅ done |
 | 9 | CLI | `motion-caption` entry point: `caption`, `compile`, `render`, `export`, `themes`, `animations`, `exporters`, `info` | ✅ done |
 | 10 | Extras + docs | OpenCV moved to the `video` extra; `all` extra; `docs/video-pipeline.md`, `docs/cli.md`, `docs/integrations.md`; README updated | ✅ done |
-| 11 | Final sweep | full suite, ruff, reviewer pass, acceptance checklist (§21 of the task) | 🔜 next |
+| 11 | Final sweep | full suite, ruff, reviewer pass, acceptance checklist, real-FFmpeg e2e proof | ✅ done |
 
-## 4. Hard constraints carried through every milestone
+## 4. Acceptance checklist (verified, not claimed)
+
+| Task requirement | Result |
+|---|---|
+| `pipeline.process("input.mp4", "output.mp4")` | ✅ `CaptionVideoPipeline` — unit + integration tested |
+| `motion-caption caption input.mp4 --theme music_video --preset youtube_shorts --ai gemini -o out.mp4` | ✅ CLI wired; real-FFmpeg e2e proved the offline variant |
+| Deterministic mode `--no-ai --transcript t.json` | ✅ `--transcript` verified live (typed error paths too) |
+| Library mode (compile → render_frame/render_sequence → ASS/JSON) | ✅ unchanged public API, still green |
+| Architecture (AI/WhisperX/FFmpeg/YOLO outside compiler) | ✅ application layer only; compiler untouched |
+| Compiler deterministic; no LLM/FFmpeg inside stages | ✅ reviewer-verified; golden snapshots still pass |
+| Error handling (typed + hints) | ✅ MotionCaptionError hierarchy incl. `MissingDependencyError`, `RequestIOError` |
+| Tests: mocks for AI/FFmpeg; no external API in suite | ✅ all provider/SDK calls mocked |
+| Real end-to-end (small fixture, no external AI) | ✅ 3 s testsrc+sine → 91 frames → h264+aac MP4, captions verified on pixels |
+| Docs reflect reality | ✅ README/GUIDE/docs updated; only shipped features documented |
+
+## 5. Hard constraints carried through every milestone
 
 - `SubtitleTimeline` remains the canonical IR; backends never measure/layout/place/
   animate/LLM-call on their own.
