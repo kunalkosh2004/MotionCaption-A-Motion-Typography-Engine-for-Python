@@ -97,11 +97,7 @@ def _bake_track(
     color: Color | None,
     event_start: float = 0.0,
 ) -> str:
-    """Bake an AnimationTrack into compact ASS transform segments.
-
-    ASS transform timestamps are milliseconds relative to the
-    beginning of the Dialogue event.
-    """
+    """Bake an AnimationTrack into compact ASS transform segments."""
 
     start = track.start
     end = track.end
@@ -110,87 +106,78 @@ def _bake_track(
         region = track.sample(start)
         return "{" + _region_tags(region, x, y, color) + "}"
 
-    # Sample the animation.
     samples = max(1, round((end - start) * fps))
 
-    regions = [
-        track.sample(
-            start + (end - start) * i / samples
-        )
-        for i in range(samples + 1)
-    ]
-
-    first = regions[0]
+    first = track.sample(start)
 
     parts = [
         "{" + _region_tags(first, x, y, color) + "}"
     ]
 
-    def changed(a, b, epsilon=1e-4):
-        return abs(a - b) > epsilon
+    previous = first
+    previous_time = start
 
-    previous = regions[0]
-    previous_t = start
-
-    for index in range(1, len(regions)):
-        region = regions[index]
-
-        # Skip completely identical samples.
-        if (
-            not changed(region.scale.x, previous.scale.x)
-            and not changed(region.scale.y, previous.scale.y)
-            and not changed(region.rotation, previous.rotation)
-            and not changed(region.blur, previous.blur)
-            and not changed(region.opacity, previous.opacity)
-        ):
-            continue
-
-        t = start + (end - start) * index / samples
-
-        t1 = max(
-            0,
-            round((previous_t - event_start) * 1000),
+    for index in range(1, samples + 1):
+        current_time = start + (
+            (end - start) * index / samples
         )
 
-        t2 = max(
-            t1,
-            round((t - event_start) * 1000),
-        )
+        current = track.sample(current_time)
 
         tags = []
 
-        if changed(region.scale.x, previous.scale.x):
+        if abs(current.scale.x - previous.scale.x) > 1e-4:
             tags.append(
-                f"\\fscx{region.scale.x * 100:g}"
+                f"\\fscx{current.scale.x * 100:g}"
             )
 
-        if changed(region.scale.y, previous.scale.y):
+        if abs(current.scale.y - previous.scale.y) > 1e-4:
             tags.append(
-                f"\\fscy{region.scale.y * 100:g}"
+                f"\\fscy{current.scale.y * 100:g}"
             )
 
-        if changed(region.rotation, previous.rotation):
+        if abs(current.rotation - previous.rotation) > 1e-4:
             tags.append(
-                f"\\frz{region.rotation:g}"
+                f"\\frz{current.rotation:g}"
             )
 
-        if changed(region.blur, previous.blur):
+        if abs(current.blur - previous.blur) > 1e-4:
             tags.append(
-                f"\\blur{region.blur:g}"
+                f"\\blur{current.blur:g}"
             )
 
-        if changed(region.opacity, previous.opacity):
+        previous_alpha = _ass_alpha(previous.opacity)
+        current_alpha = _ass_alpha(current.opacity)
+
+        if current_alpha != previous_alpha:
             tags.append(
-                f"\\alpha{_ass_alpha(region.opacity)}"
+                f"\\alpha{current_alpha}"
             )
 
-        if tags and t2 > t1:
-            parts.append(
-                f"{{\\t({t1},{t2},{''.join(tags)})}}"
+        if tags:
+            t1 = max(
+                0,
+                round(
+                    (previous_time - event_start) * 1000
+                ),
             )
 
-        previous = region
-        previous_t = t
+            t2 = max(
+                t1,
+                round(
+                    (current_time - event_start) * 1000
+                ),
+            )
+
+            if t2 > t1:
+                parts.append(
+                    f"{{\\t({t1},{t2},{''.join(tags)})}}"
+                )
+
+        # IMPORTANT:
+        # Always advance these, even if there was no change.
+        previous = current
+        previous_time = current_time
 
     return "".join(parts)
 
@@ -284,7 +271,6 @@ class AssExporter:
         fps: int = 30,
         style_name: str = "Default",
     ) -> ExporterResult:
-        scale = timeline.scale
         base_fill = timeline.styles[0].typography.fill if timeline.styles else None
         events: list[str] = []
         for event in timeline.events:
@@ -293,8 +279,8 @@ class AssExporter:
                 typography = word.typography
                 if typography is None and event.style is not None:
                     typography = event.style.typography
-                x = word.box.left * scale
-                y = word.box.top * scale
+                x = timeline.resolution.width / 2
+                y = timeline.resolution.height - 80
                 track = word.animation or AnimationTrack()
                 color = None
                 if (
