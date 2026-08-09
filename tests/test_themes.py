@@ -109,6 +109,7 @@ class TestResolveTheme:
             "Avenir",
             "Helvetica Neue",
             "Helvetica",
+            "Kohinoor Devanagari",
             "Mukta Mahee",
         ]
 

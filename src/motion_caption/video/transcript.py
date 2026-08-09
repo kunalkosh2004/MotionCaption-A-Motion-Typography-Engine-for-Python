@@ -53,7 +53,10 @@ def normalize_transcript(transcript: Transcript) -> Transcript:
     words = [
         word
         for word in transcript.words
-        if _finite(word.start) and _finite(word.end) and word.end > word.start
+        if _finite(word.start)
+        and _finite(word.end)
+        and word.end > word.start
+        and any(char.isalnum() for char in word.text)
     ]
     words.sort(key=lambda word: (word.start, word.text))
     sanitized: list[WordTimestamp] = []

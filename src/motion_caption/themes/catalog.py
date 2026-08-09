@@ -43,8 +43,10 @@ _MUSIC_VIDEO = ThemeSpec(
         ("Avenir", 600),
         ("Helvetica Neue", 600),
         ("Helvetica", 600),
-        # Last-resort fallback for Gurmukhi (Punjabi) lyrics; per-word glyph
-        # coverage selects it only for characters the Latin stack cannot draw.
+        # Last-resort fallbacks for Indic lyrics (Devanagari + Gurmukhi);
+        # per-word glyph coverage selects them only for characters the Latin
+        # stack cannot draw, so Latin styling is never affected.
+        ("Kohinoor Devanagari", 400),
         ("Mukta Mahee", 400),
     ),
     style={

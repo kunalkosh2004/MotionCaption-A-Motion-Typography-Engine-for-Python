@@ -123,6 +123,19 @@ def test_normalize_preserves_language() -> None:
     assert result.language == "hi"
 
 
+def test_normalize_drops_punctuation_only_words() -> None:
+    """ASR noise like "," or "!" must never be captioned."""
+    result = normalize_transcript(
+        _transcript(
+            _word(",", 0.0, 1.0),
+            _word("ना", 1.0, 1.5),  # Devanagari counts as alphanumeric
+            _word("!", 1.5, 2.0),
+            _word("   ", 2.0, 2.5),
+        )
+    )
+    assert [word.text for word in result.words] == ["ना"]
+
+
 # --- protocol shape ---------------------------------------------------------
 
 
