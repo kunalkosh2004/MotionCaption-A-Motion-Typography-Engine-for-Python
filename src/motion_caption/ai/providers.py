@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 
+from motion_caption.errors import AIProviderError
 from motion_caption.ir.request import AIContribution, CaptionRequest
 from motion_caption.models.transcript import EmphasisMode
 
@@ -139,8 +140,9 @@ class OpenAIProvider:
     def annotate(self, request: CaptionRequest) -> AIContribution:
         api_key = self.api_key or os.environ.get("OPENAI_API_KEY")
         if not api_key:
-            raise RuntimeError(
-                "OpenAIProvider: no api_key; pass one or set OPENAI_API_KEY"
+            raise AIProviderError(
+                "OpenAIProvider: no api_key",
+                hint="pass api_key=... or export OPENAI_API_KEY",
             )
         content = _openai_complete(
             api_key, self.model, _build_prompt(_transcript_payload(request))
@@ -163,8 +165,9 @@ class GeminiProvider:
     def annotate(self, request: CaptionRequest) -> AIContribution:
         api_key = self.api_key or os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            raise RuntimeError(
-                "GeminiProvider: no api_key; pass one or set GEMINI_API_KEY"
+            raise AIProviderError(
+                "GeminiProvider: no api_key",
+                hint="pass api_key=... or export GEMINI_API_KEY",
             )
         content = _gemini_generate(
             api_key, self.model, _build_prompt(_transcript_payload(request))

@@ -34,6 +34,16 @@ from motion_caption.animations import (
 from motion_caption.canvas import AspectRatio, Canvas, StandardResolution
 from motion_caption.easing import EasingKind, EasingSpec, compile_spec
 from motion_caption.emphasis import apply_emphasis, importance_to_mode
+from motion_caption.errors import (
+    AIProviderError,
+    ExportError,
+    FFmpegError,
+    InvalidTranscriptError,
+    InvalidVideoError,
+    MotionCaptionError,
+    PluginError,
+    TranscriptionError,
+)
 from motion_caption.exporters import (
     EXPORTER_REGISTRY,
     AssOptions,
@@ -130,6 +140,7 @@ from motion_caption.typography import (
 __version__ = "0.1.0"
 
 __all__ = [
+    "AIProviderError",
     "AIContribution",
     "AnimationPersonality",
     "ANIMATION_REGISTRY",
@@ -149,9 +160,11 @@ __all__ = [
     "EmphasisMode",
     "EasingKind",
     "EasingSpec",
+    "ExportError",
     "Exporter",
     "ExporterResult",
     "EXPORTER_REGISTRY",
+    "FFmpegError",
     "Face",
     "FillSpec",
     "GradientFill",
@@ -159,6 +172,8 @@ __all__ = [
     "FontManager",
     "FontRef",
     "FontStack",
+    "InvalidTranscriptError",
+    "InvalidVideoError",
     "Keyframe",
     "KeyframeTimeline",
     "KeyframeTrack",
@@ -166,12 +181,14 @@ __all__ = [
     "LayoutOptions",
     "Length",
     "MeasuredBlock",
+    "MotionCaptionError",
     "Padding",
     "PlacementRegion",
     "PLACEMENT_REGISTRY",
     "PLATFORM_SAFE_AREAS",
     "PlacementConfig",
     "PlacedBlock",
+    "PluginError",
     "Point",
     "PropertyKind",
     "ReadingStats",
@@ -206,6 +223,7 @@ __all__ = [
     "TextStyle",
     "ThemeSpec",
     "TimelineRenderer",
+    "TranscriptionError",
     "Track",
     "Transcript",
     "Unit",
