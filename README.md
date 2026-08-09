@@ -10,7 +10,7 @@ compiled timeline feeding every backend.
 
 ## Status
 
-All subsystems implemented and tested — **388 tests**, lint-clean. The
+All subsystems implemented and tested — **499 tests**, lint-clean. The
 architecture is compiler-shaped:
 
 ```
@@ -35,17 +35,51 @@ are checked into the test suite.
 subsystem, backends, AI, plugins, and the full API reference in one file.
 The design contracts live in [`docs/architecture.md`](docs/architecture.md)
 (principles) and [`docs/compiler.md`](docs/compiler.md) (the compiler/IR
-contract).
+contract). The production video pipeline is in
+[`docs/video-pipeline.md`](docs/video-pipeline.md), external integrations in
+[`docs/integrations.md`](docs/integrations.md), and the productionization
+roadmap in [`docs/roadmap-productionization.md`](docs/roadmap-productionization.md).
 
 ## Install
 
 ```bash
-pip install -e ".[dev]"     # development
+pip install -e ".[dev]"     # development (compiler + test tooling)
 pip install motion-caption   # once published
 ```
 
-Requires Python 3.12+. Optional extras: `ai` (OpenAI / Gemini providers),
-`whisper` (WhisperX transcript import).
+Requires Python 3.12+ and FFmpeg for the video pipeline. Optional extras:
+
+| Extra | Adds |
+|---|---|
+| `ai` | Gemini / OpenAI annotation SDKs |
+| `whisper` | WhisperX word-level transcription (heavy: torch) |
+| `video` | OpenCV face detection for the video pipeline |
+| `all` | everything above |
+| `dev` | pytest, pytest-cov, ruff |
+
+## Command line
+
+`motion-caption` turns a video into a captioned video in one call
+(transcribe → compile → streamed render → FFmpeg encode → audio mux):
+
+```bash
+motion-caption caption input.mp4 \
+    --theme music_video \
+    --preset youtube_shorts \
+    --ai gemini \
+    -o output.mp4
+```
+
+Deterministic offline mode (no AI, no ASR):
+
+```bash
+motion-caption caption input.mp4 --transcript transcript.json -o output.mp4
+```
+
+Plus `compile` (request JSON → timeline JSON), `render` (timeline → PNG
+frames), `export` (timeline → ASS/JSON), `themes` / `animations` /
+`exporters` (listings) and `info` (ffprobe metadata). Full reference in
+[`docs/cli.md`](docs/cli.md).
 
 ## Quick start
 

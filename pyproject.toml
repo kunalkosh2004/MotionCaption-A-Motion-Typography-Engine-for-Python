@@ -31,7 +31,6 @@ dependencies = [
     "Pillow>=10.0",
     "numpy>=1.26",
     "fonttools>=4.45",
-    "opencv-python-headless>=4.8",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +44,10 @@ ai = [
     "openai>=1.0",
 ]
 whisper = ["whisperx>=0.3"]
+# Video application layer: optional face detection (OpenCV Haar cascade).
+# The compiler core never imports cv2 — everything stays lazy.
+video = ["opencv-python-headless>=4.8"]
+all = ["motion-caption[ai,whisper,video]"]
 
 [project.scripts]
 motion-caption = "motion_caption.cli:main"

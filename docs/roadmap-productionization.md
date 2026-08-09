@@ -1,6 +1,6 @@
 # Productionization Roadmap — Audit & Plan
 
-Status: **Milestones 0–2 complete** · baseline: **423 tests passing, ruff clean**
+Status: **Milestones 0–10 complete** · baseline: **499 tests passing, ruff clean**
 
 This document records the audit performed before the productionization effort and
 the milestone-by-milestone plan. Each milestone lands as its own commit after
@@ -58,17 +58,17 @@ working:
 | # | Milestone | Deliverable | Commit style |
 |---|---|---|---|
 | 0 | Audit + baseline repair | this doc; snapshot portability; repo hygiene | ✅ done |
-| 1 | Error layer | `motion_caption/errors.py`: `MotionCaptionError` hierarchy (TranscriptionError, AIProviderError, FFmpegError, InvalidVideoError, InvalidTranscriptError, ExportError, PluginError) with actionable messages | ✅ done |
-| 2 | FFmpeg layer | `motion_caption/video/ffmpeg.py`: `FFmpegVideoProcessor` (probe, extract_audio, frames→video, mux, burn), arg-array subprocess, timeouts, temp-dir management, `FFMPEG_PATH` env | ✅ done |
-| 3 | Transcript providers | `motion_caption/video/transcript.py`: `TranscriptProvider` protocol, validation (empty/malformed/overlap/language), deterministic `FakeTranscriptProvider` | `feat(video): transcript providers` |
-| 4 | WhisperX adapter | optional adapter behind the `whisper` extra; word-level output → `Transcript`; graceful missing-install errors | `feat(video): whisperx adapter` |
-| 5 | Video pipeline | `motion_caption/video/pipeline.py`: `CaptionVideoPipeline.process()` orchestration (metadata → audio → transcript → AI annotate → compile → streamed frame render → ffmpeg → mux → result); chunked rendering, no full-length frame RAM hold | `feat(video): end-to-end pipeline` |
-| 6 | Face detection | `FaceDetector` protocol + sampled/interpolated detection; normalized boxes feed existing `CaptionRequest.faces`; no compiler changes | `feat(video): face detection` |
-| 7 | Platform presets | `motion_caption/video/presets.py`: youtube_shorts / tiktok / instagram_reels / youtube_landscape / square → resolution + safe area + placement + margins | `feat(video): platform presets` |
-| 8 | JSON request support | load + validate `CaptionRequest` from JSON; `compile` from file; clear errors | `feat(cli): json request io` |
-| 9 | CLI | `motion-caption` entry point: `caption`, `compile`, `render`, `export`, `themes`, `animations`, `exporters`, `info` | `feat(cli): ...` |
-| 10 | Extras + docs | move OpenCV to an extra; `docs/video-pipeline.md`, `docs/cli.md`, `docs/integrations.md`; README quick-start to `motion-caption caption input.mp4 -o out.mp4` | `docs: ...` |
-| 11 | Final sweep | full suite, ruff, reviewer pass, acceptance checklist (§21 of the task) | `chore: final sweep` |
+| 1 | Error layer | `motion_caption/errors.py`: `MotionCaptionError` hierarchy (+ `RequestIOError`) with actionable messages | ✅ done |
+| 2 | FFmpeg layer | `motion_caption/video/ffmpeg.py`: `FFmpegVideoProcessor` (probe, extract_audio, extract_frame, frames→video, mux, burn), arg-array subprocess, timeouts, temp-dir management, `FFMPEG_PATH` env | ✅ done |
+| 3 | Transcript providers | `motion_caption/video/transcript.py`: `TranscriptProvider` protocol, validation (empty/malformed/overlap), deterministic `FakeTranscriptProvider` | ✅ done |
+| 4 | WhisperX adapter | optional adapter behind the `whisper` extra; word-level output → `Transcript`; graceful missing-install errors | ✅ done |
+| 5 | Video pipeline | `CaptionVideoPipeline.process()` orchestration (probe → audio → transcript → AI annotate → compile → **streamed** frame render → encode → mux → result); no full-sequence RAM hold | ✅ done |
+| 6 | Face detection | `FaceDetector` protocol + `OpenCVFaceDetector` + sampled union detection; no compiler changes | ✅ done |
+| 7 | Platform presets | `motion_caption/video/presets.py`: shorts/tiktok/reels/landscape/square → resolution + safe area + fps | ✅ done |
+| 8 | JSON request IO | `motion_caption/io.py`: load/save request, transcript, timeline; typed errors | ✅ done |
+| 9 | CLI | `motion-caption` entry point: `caption`, `compile`, `render`, `export`, `themes`, `animations`, `exporters`, `info` | ✅ done |
+| 10 | Extras + docs | OpenCV moved to the `video` extra; `all` extra; `docs/video-pipeline.md`, `docs/cli.md`, `docs/integrations.md`; README updated | ✅ done |
+| 11 | Final sweep | full suite, ruff, reviewer pass, acceptance checklist (§21 of the task) | 🔜 next |
 
 ## 4. Hard constraints carried through every milestone
 
