@@ -331,6 +331,7 @@ class FFmpegVideoProcessor:
         height: int,
         pattern: str = "%06d.png",
         crf: int = 18,
+        timeout: float | None = None,
     ) -> Path:
         """Encode a zero-indexed PNG sequence into H.264 MP4.
 
@@ -366,7 +367,8 @@ class FFmpegVideoProcessor:
                 "-movflags",
                 "+faststart",
                 str(target),
-            ]
+            ],
+            timeout=timeout,
         )
         return target
 
@@ -379,6 +381,7 @@ class FFmpegVideoProcessor:
         *,
         pattern: str = "%06d.png",
         crf: int = 18,
+        timeout: float | None = None,
     ) -> Path:
         """Composite an RGBA PNG sequence on top of a video (captions over footage).
 
@@ -419,6 +422,7 @@ class FFmpegVideoProcessor:
                 str(target),
             ],
             check_file=Path(video_path),
+            timeout=timeout,
         )
         return target
 

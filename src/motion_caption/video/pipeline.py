@@ -254,6 +254,9 @@ class CaptionVideoPipeline:
 
             # 6. Composite captions over the original footage; only fall back
             #    to a standalone encode when there is no video to overlay on.
+            #    The 120s default timeout fits short clips but not long
+            #    encodes — scale it to the media duration.
+            encode_timeout = max(120.0, metadata.duration * 2.0 + 30.0)
             captioned = workspace / "captioned.mp4"
             if metadata.has_video:
                 self.ffmpeg.overlay_frames(
@@ -261,6 +264,7 @@ class CaptionVideoPipeline:
                     frames_dir,
                     render_fps,
                     captioned,
+                    timeout=encode_timeout,
                 )
             else:
                 self.ffmpeg.render_frames_to_video(
@@ -269,6 +273,7 @@ class CaptionVideoPipeline:
                     captioned,
                     width=canvas.width,
                     height=canvas.height,
+                    timeout=encode_timeout,
                 )
 
             # 7. Mux the original audio (full quality) onto the captioned video.
