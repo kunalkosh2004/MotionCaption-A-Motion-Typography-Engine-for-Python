@@ -15,6 +15,12 @@ class TestDifficulty:
     def test_empty_is_zero(self):
         assert difficulty_of("") == 0.0
 
+    def test_punctuation_only_is_zero_not_crash(self):
+        # Regression: text consisting solely of punctuation stripped to no
+        # measurable words used to divide by zero in the long-word ratio.
+        assert difficulty_of("!!!") == 0.0
+        assert difficulty_of("—….,") == 0.0
+
     def test_in_range(self):
         assert 0.0 <= difficulty_of("The quick brown fox jumps over the lazy dog again") <= 1.0
 

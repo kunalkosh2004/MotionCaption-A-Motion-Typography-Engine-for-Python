@@ -34,7 +34,9 @@ def difficulty_of(text: str) -> float:
     if not words:
         return 0.0
     lengths = [len(word) for word in words if word]
-    average = sum(lengths) / len(lengths) if lengths else 0.0
+    if not lengths:
+        return 0.0  # e.g. a segment consisting only of punctuation
+    average = sum(lengths) / len(lengths)
     long_ratio = sum(1 for length in lengths if length >= 7) / len(lengths)
     return min(1.0, 0.5 * max(0.0, (average - 4.0) / 6.0) + 0.5 * long_ratio)
 
