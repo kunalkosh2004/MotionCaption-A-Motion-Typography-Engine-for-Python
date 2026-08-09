@@ -1,6 +1,6 @@
 # Productionization Roadmap — Audit & Plan
 
-Status: **Milestone 0 complete** · baseline: **389 tests passing, ruff clean**
+Status: **Milestones 0–2 complete** · baseline: **423 tests passing, ruff clean**
 
 This document records the audit performed before the productionization effort and
 the milestone-by-milestone plan. Each milestone lands as its own commit after
@@ -58,8 +58,8 @@ working:
 | # | Milestone | Deliverable | Commit style |
 |---|---|---|---|
 | 0 | Audit + baseline repair | this doc; snapshot portability; repo hygiene | ✅ done |
-| 1 | Error layer | `motion_caption/errors.py`: `MotionCaptionError` hierarchy (TranscriptionError, AIProviderError, FFmpegError, InvalidVideoError, InvalidTranscriptError, ExportError, PluginError) with actionable messages | `feat(errors): ...` |
-| 2 | FFmpeg layer | `motion_caption/video/ffmpeg.py`: `FFmpegVideoProcessor` (probe, extract_audio, frames→video, mux), arg-array subprocess, timeouts, temp-dir management, `FFMPEG_PATH` env | `feat(video): ffmpeg bridge` |
+| 1 | Error layer | `motion_caption/errors.py`: `MotionCaptionError` hierarchy (TranscriptionError, AIProviderError, FFmpegError, InvalidVideoError, InvalidTranscriptError, ExportError, PluginError) with actionable messages | ✅ done |
+| 2 | FFmpeg layer | `motion_caption/video/ffmpeg.py`: `FFmpegVideoProcessor` (probe, extract_audio, frames→video, mux, burn), arg-array subprocess, timeouts, temp-dir management, `FFMPEG_PATH` env | ✅ done |
 | 3 | Transcript providers | `motion_caption/video/transcript.py`: `TranscriptProvider` protocol, validation (empty/malformed/overlap/language), deterministic `FakeTranscriptProvider` | `feat(video): transcript providers` |
 | 4 | WhisperX adapter | optional adapter behind the `whisper` extra; word-level output → `Transcript`; graceful missing-install errors | `feat(video): whisperx adapter` |
 | 5 | Video pipeline | `motion_caption/video/pipeline.py`: `CaptionVideoPipeline.process()` orchestration (metadata → audio → transcript → AI annotate → compile → streamed frame render → ffmpeg → mux → result); chunked rendering, no full-length frame RAM hold | `feat(video): end-to-end pipeline` |
