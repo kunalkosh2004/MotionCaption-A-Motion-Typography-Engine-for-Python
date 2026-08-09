@@ -24,7 +24,7 @@
           "family": "Roboto",
           "weight": 400,
           "italic": false,
-          "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+          "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
           "index": 0
         },
         "font_size": 56.0,
@@ -103,7 +103,7 @@
                 "family": "Roboto",
                 "weight": 400,
                 "italic": false,
-                "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                 "index": 0
               },
               "font_size": 56.0,
@@ -197,7 +197,7 @@
                   "family": "Roboto",
                   "weight": 400,
                   "italic": false,
-                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                   "index": 0
                 },
                 "font_size": 56.0,
@@ -344,7 +344,7 @@
                   "family": "Roboto",
                   "weight": 400,
                   "italic": false,
-                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                   "index": 0
                 },
                 "font_size": 56.0,
@@ -491,7 +491,7 @@
                   "family": "Roboto",
                   "weight": 400,
                   "italic": false,
-                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                   "index": 0
                 },
                 "font_size": 56.0,
@@ -636,7 +636,7 @@
                 "family": "Roboto",
                 "weight": 400,
                 "italic": false,
-                "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                 "index": 0
               },
               "font_size": 56.0,
@@ -730,7 +730,7 @@
                   "family": "Roboto",
                   "weight": 400,
                   "italic": false,
-                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                   "index": 0
                 },
                 "font_size": 56.0,
@@ -877,7 +877,7 @@
                   "family": "Roboto",
                   "weight": 400,
                   "italic": false,
-                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                   "index": 0
                 },
                 "font_size": 56.0,
@@ -1054,7 +1054,7 @@
                   "family": "Roboto",
                   "weight": 400,
                   "italic": false,
-                  "path": "/Users/kunalkoshta/Desktop/MotionCaption-A-Motion-Typography-Engine-for-Python/tests/fonts/Roboto-Regular.ttf",
+                  "path": "<REPO_ROOT>/tests/fonts/Roboto-Regular.ttf",
                   "index": 0
                 },
                 "font_size": 56.0,

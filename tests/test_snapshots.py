@@ -12,6 +12,7 @@ artifact. Regenerate after intentional changes with:
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pinned
 import snapshot_utils
@@ -20,6 +21,19 @@ from motion_caption.ir.timeline import SubtitleTimeline, WordEvent
 from motion_caption.models.keyframe import Region
 
 GOLDEN_REQUEST = pinned.golden_request()
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _portable(value: str) -> str:
+    """Normalize absolute repo paths so snapshots are byte-stable on any checkout.
+
+    ``WordEvent``/``StyleTrack`` typography serializes the bound font's
+    ``FontFile.path`` as an absolute path; replace the repo root with a
+    placeholder so the committed snapshot does not depend on where the
+    repository lives on disk.
+    """
+    return value.replace(str(REPO_ROOT), "<REPO_ROOT>")
 
 
 def _compile_timeline(compiler: Compiler) -> SubtitleTimeline:
@@ -51,7 +65,7 @@ def test_timeline_snapshot(pinned_compiler: Compiler) -> None:
     assert karaoke.emphasis.value == "karaoke"
 
     snapshot_utils.assert_text_snapshot(
-        timeline.model_dump_json(indent=2) + "\n",
+        _portable(timeline.model_dump_json(indent=2)) + "\n",
         "timeline",
         "golden.json",
     )
@@ -68,7 +82,7 @@ def test_snapshot_helpers_agree_on_missing_snapshot(pinned_compiler: Compiler) -
     """The committed snapshot must exist and be up to date with the current output."""
     path = snapshot_utils.snapshot_path("timeline", "golden.json")
     assert path.is_file(), "golden timeline snapshot missing; run with MC_UPDATE_SNAPSHOTS=1"
-    expected = _compile_timeline(pinned_compiler).model_dump_json(indent=2) + "\n"
+    expected = _portable(_compile_timeline(pinned_compiler).model_dump_json(indent=2)) + "\n"
     assert path.read_text(encoding="utf-8") == expected
 
 
