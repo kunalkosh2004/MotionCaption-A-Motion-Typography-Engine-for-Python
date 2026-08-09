@@ -32,6 +32,7 @@ from motion_caption.canvas import Canvas
 from motion_caption.compiler.engine import Compiler, default_compiler
 from motion_caption.errors import (
     AIProviderError,
+    FFmpegError,
     InvalidTranscriptError,
     MotionCaptionError,
 )
@@ -134,12 +135,13 @@ class CaptionVideoPipeline:
         if provider is None:
             return None
         if isinstance(provider, str):
-            if provider not in AI_REGISTRY:
+            try:
+                return AI_REGISTRY.get(provider)
+            except KeyError:
                 raise AIProviderError(
                     f"unknown AI provider {provider!r}",
                     hint=f"available providers: {', '.join(sorted(AI_REGISTRY.keys))}",
-                )
-            return AI_REGISTRY[provider]
+                ) from None
         return provider
 
     def _annotate(self, request: CaptionRequest) -> tuple[CaptionRequest, bool]:
@@ -196,7 +198,12 @@ class CaptionVideoPipeline:
         input_path = Path(input_video)
         output_path = Path(output_video) if output_video else self._default_output(input_path)
 
-        # 1. Validate + inspect the input.
+        # 1. Validate + inspect the input (fail fast: no ffmpeg, no point rendering).
+        if not self.ffmpeg.available():
+            raise FFmpegError(
+                "ffmpeg/ffprobe not available",
+                hint="install ffmpeg (brew install ffmpeg) or set FFMPEG_PATH",
+            )
         metadata = self.ffmpeg.probe(input_path)
 
         provider = transcript_provider or self.transcript_provider

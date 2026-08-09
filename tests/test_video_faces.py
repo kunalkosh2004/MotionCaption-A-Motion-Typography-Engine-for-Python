@@ -9,6 +9,7 @@ from types import ModuleType
 import pytest
 from PIL import Image
 
+from motion_caption.errors import MissingDependencyError
 from motion_caption.models import Box
 from motion_caption.placement import Face
 from motion_caption.video.faces import (
@@ -152,5 +153,6 @@ def test_opencv_detector_cascade_missing(monkeypatch, fake_cv2) -> None:
 
     fake_cv2.CascadeClassifier = lambda path: _EmptyCascade()
     detector = OpenCVFaceDetector()
-    with pytest.raises(RuntimeError, match="failed to load"):
+    with pytest.raises(MissingDependencyError, match="failed to load") as exc_info:
         detector.detect(Image.new("RGB", (10, 10), (0, 0, 0)))
+    assert exc_info.value.hint

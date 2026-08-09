@@ -221,6 +221,28 @@ def test_caption_command_with_transcript_file(tmp_path, capsys, monkeypatch) -> 
     assert code == 0
 
 
+def test_caption_ai_error_prints_hint(monkeypatch, tmp_path, capsys) -> None:
+    from motion_caption.errors import AIProviderError
+
+    class _RaisingPipeline:
+        def __init__(self, **kwargs) -> None:
+            pass
+
+        def process(self, *args, **kwargs):
+            raise AIProviderError(
+                "unknown AI provider 'bogus'", hint="available: gemini, openai"
+            )
+
+    monkeypatch.setattr(cli, "CaptionVideoPipeline", _RaisingPipeline)
+    video = tmp_path / "in.mp4"
+    video.write_bytes(b"x")
+    code = _run(["caption", str(video), "--ai", "bogus", "-o", "out.mp4"], capsys)
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "error:" in err
+    assert "available: gemini, openai" in err  # the hint is surfaced
+
+
 def test_invalid_resolution_is_human_error(tmp_path, capsys) -> None:
     request = _write_request(tmp_path)
     timeline = tmp_path / "timeline.json"

@@ -22,7 +22,6 @@ import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
 
 from motion_caption import __version__
 from motion_caption.animations import ANIMATION_REGISTRY
@@ -30,7 +29,7 @@ from motion_caption.canvas import Canvas
 from motion_caption.compiler import compile
 from motion_caption.errors import MotionCaptionError
 from motion_caption.exporters import EXPORTER_REGISTRY
-from motion_caption.io import load_request, load_timeline
+from motion_caption.io import load_request, load_timeline, load_transcript
 from motion_caption.render import TimelineRenderer
 from motion_caption.themes import THEME_REGISTRY
 from motion_caption.video import CaptionVideoPipeline
@@ -140,7 +139,7 @@ def _parse_resolution(value: str | None) -> tuple[int, int] | None:
 
 
 def _cmd_caption(args: argparse.Namespace) -> None:
-    transcript = load_transcript_file(args.transcript) if args.transcript else None
+    transcript = load_transcript(args.transcript) if args.transcript else None
     pipeline = CaptionVideoPipeline(
         theme=args.theme,
         preset=args.preset,
@@ -235,12 +234,6 @@ def _print_listing(kind: str, names: list[str]) -> None:
     print(f"{kind} ({len(names)}):")
     for name in names:
         print(f"  {name}")
-
-
-def load_transcript_file(path: str) -> Any:
-    from motion_caption.io import load_transcript
-
-    return load_transcript(path)
 
 
 # -- entry point -------------------------------------------------------------

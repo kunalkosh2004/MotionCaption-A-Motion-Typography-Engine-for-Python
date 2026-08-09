@@ -24,7 +24,8 @@ sudo apt install ffmpeg      # Debian/Ubuntu
 Word-level transcription behind the `whisper` extra:
 
 ```bash
-pip install -e "motion-caption[whisper]"
+pip install -e ".[whisper]"        # from a local checkout
+pip install "motion-caption[whisper]"  # once published
 ```
 
 ```python
@@ -44,7 +45,8 @@ transcript = provider.transcribe("audio.wav")
 ## Gemini (optional annotation)
 
 ```bash
-pip install -e "motion-caption[ai]"
+pip install -e ".[ai]"        # from a local checkout
+pip install "motion-caption[ai]"  # once published
 echo 'GEMINI_API_KEY=your-key' > .env   # .env is gitignored
 set -a; source .env; set +a
 ```
@@ -80,7 +82,8 @@ Default model `gpt-4o-mini`; override with `OpenAIProvider(model=...)`.
 ## Face detection (optional)
 
 ```bash
-pip install -e "motion-caption[video]"     # opencv-python-headless
+pip install -e ".[video]"        # from a local checkout (opencv-python-headless)
+pip install "motion-caption[video]"  # once published
 ```
 
 ```python

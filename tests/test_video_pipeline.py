@@ -41,6 +41,9 @@ class FakeFFmpeg:
             audio_codec="aac" if has_audio else None,
         )
 
+    def available(self) -> bool:
+        return True
+
     def probe(self, video) -> VideoMetadata:
         self.calls.append(("probe", str(video)))
         return self.metadata
@@ -227,6 +230,33 @@ def test_ai_provider_unknown_name_raises(fake_ffmpeg, tmp_path) -> None:
         pipeline.process(input_video)
 
 
+def test_ai_name_resolves_against_real_registry(
+    monkeypatch, fake_ffmpeg, compiler, tmp_path
+) -> None:
+    """The real AI_REGISTRY name path (no stub) — CLI '--ai gemini' hits this."""
+    input_video = tmp_path / "clip.mp4"
+    input_video.write_bytes(b"input")
+    called: list[tuple] = []
+
+    def _fake_annotate(request, provider):
+        called.append((request, provider))
+        return request
+
+    monkeypatch.setattr(pipeline_module, "annotate", _fake_annotate)
+    pipeline = CaptionVideoPipeline(
+        transcript_provider=FakeTranscriptProvider("registry words"),
+        ai_provider="gemini",
+        ffmpeg=fake_ffmpeg,
+        compiler=compiler,
+        fps=10,
+    )
+    result = pipeline.process(input_video)
+    assert result.llm_annotated
+    assert called, "annotate must be invoked with the real GeminiProvider"
+    provider = called[0][1]
+    assert provider.name == "gemini"
+
+
 def test_ai_name_resolves_via_registry(monkeypatch, fake_ffmpeg, compiler, tmp_path) -> None:
     input_video = tmp_path / "clip.mp4"
     input_video.write_bytes(b"input")
@@ -238,7 +268,9 @@ def test_ai_name_resolves_via_registry(monkeypatch, fake_ffmpeg, compiler, tmp_p
         def __contains__(self, key: str) -> bool:
             return key in self._providers
 
-        def __getitem__(self, key: str):
+        def get(self, key: str):
+            if key not in self._providers:
+                raise KeyError(key)
             return self._providers[key]
 
         @property

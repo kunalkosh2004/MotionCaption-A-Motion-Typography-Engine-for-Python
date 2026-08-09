@@ -53,6 +53,10 @@ class InvalidVideoError(FFmpegError):
     """The input is not a valid, decodable media file."""
 
 
+class MissingDependencyError(MotionCaptionError):
+    """An optional integration extra (ai, whisper, video) is not installed."""
+
+
 class RequestIOError(MotionCaptionError):
     """A request/transcript/timeline file could not be read or written."""
 

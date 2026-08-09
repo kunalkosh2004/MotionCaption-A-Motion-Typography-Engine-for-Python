@@ -22,6 +22,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol
 
+from motion_caption.errors import MissingDependencyError
 from motion_caption.models import Box
 from motion_caption.placement import Face
 from motion_caption.video.ffmpeg import FFmpegVideoProcessor, temporary_directory
@@ -51,19 +52,19 @@ class OpenCVFaceDetector:
     def _load_cascade(self):
         if self._cascade is not None:
             return self._cascade
-        import cv2  # type: ignore[import-not-found]
-
+        cv2 = _require_cv2()
         path = self.cascade_path or _default_cascade_path(cv2)
         cascade = cv2.CascadeClassifier(path)
         if cascade.empty():
-            raise RuntimeError(
+            raise MissingDependencyError(
                 f"failed to load Haar cascade from {path}",
+                hint="pass cascade_path= or reinstall opencv-python-headless",
             )
         self._cascade = cascade
         return cascade
 
     def detect(self, frame) -> list[Box]:
-        import cv2  # type: ignore[import-not-found]
+        cv2 = _require_cv2()
         import numpy as np
 
         rgb = np.asarray(frame.convert("RGB"))
@@ -72,6 +73,17 @@ class OpenCVFaceDetector:
             gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40)
         )
         return [Box(float(x), float(y), float(x + w), float(y + h)) for x, y, w, h in faces]
+
+
+def _require_cv2():
+    try:
+        import cv2  # type: ignore[import-not-found]
+    except ImportError as exc:
+        raise MissingDependencyError(
+            "OpenCV (cv2) is not installed",
+            hint="pip install 'motion-caption[video]' (or pip install opencv-python-headless)",
+        ) from exc
+    return cv2
 
 
 def _default_cascade_path(cv2) -> str:
