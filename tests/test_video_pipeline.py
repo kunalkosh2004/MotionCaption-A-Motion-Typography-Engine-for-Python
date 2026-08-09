@@ -345,6 +345,24 @@ def test_faces_pass_through(fake_ffmpeg, compiler, tmp_path) -> None:
     assert compiler.requests[0].faces == [face]
 
 
+def test_preset_fills_request_fields(fake_ffmpeg, compiler, tmp_path) -> None:
+    input_video = tmp_path / "clip.mp4"
+    input_video.write_bytes(b"input")
+    pipeline = CaptionVideoPipeline(
+        theme="clean",
+        preset="youtube_shorts",
+        transcript_provider=FakeTranscriptProvider("hello world"),
+        ffmpeg=fake_ffmpeg,
+        compiler=compiler,
+    )
+    result = pipeline.process(input_video)
+    request = compiler.requests[0]
+    assert request.platform == "youtube_shorts"
+    assert (request.resolution.width, request.resolution.height) == (1080, 1920)
+    assert request.safe_area is not None and request.safe_area.bottom > 0.0
+    assert result.details["fps"] == 30
+
+
 def test_face_detector_populates_request(fake_ffmpeg, compiler, tmp_path) -> None:
     from motion_caption.models import Box
 

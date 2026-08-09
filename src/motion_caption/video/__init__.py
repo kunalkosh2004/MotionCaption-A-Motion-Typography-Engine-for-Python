@@ -18,6 +18,12 @@ from motion_caption.video.ffmpeg import (
     temporary_directory,
 )
 from motion_caption.video.pipeline import CaptionVideoPipeline, PipelineResult
+from motion_caption.video.presets import (
+    PLATFORM_PRESETS,
+    PlatformPreset,
+    available_presets,
+    platform_preset,
+)
 from motion_caption.video.transcript import (
     FakeTranscriptProvider,
     TranscriptProvider,
@@ -31,11 +37,15 @@ __all__ = [
     "FaceDetector",
     "FakeTranscriptProvider",
     "OpenCVFaceDetector",
+    "PLATFORM_PRESETS",
     "PipelineResult",
+    "PlatformPreset",
     "TranscriptProvider",
     "VideoMetadata",
+    "available_presets",
     "detect_faces_for_video",
     "normalize_transcript",
+    "platform_preset",
     "temporary_directory",
     "validate_transcript",
 ]

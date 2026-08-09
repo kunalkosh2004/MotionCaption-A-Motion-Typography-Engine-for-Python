@@ -38,10 +38,11 @@ from motion_caption.errors import (
 from motion_caption.ir.request import CaptionRequest
 from motion_caption.ir.timeline import SubtitleTimeline
 from motion_caption.models import Transcript
-from motion_caption.placement import Face
+from motion_caption.placement import Face, SafeArea
 from motion_caption.render import TimelineRenderer
 from motion_caption.video.faces import FaceDetector, detect_faces_for_video
 from motion_caption.video.ffmpeg import FFmpegVideoProcessor, VideoMetadata, temporary_directory
+from motion_caption.video.presets import PlatformPreset, platform_preset
 from motion_caption.video.transcript import (
     TranscriptProvider,
     normalize_transcript,
@@ -78,8 +79,13 @@ class CaptionVideoPipeline:
             ``"openai"``); ``None`` disables AI (rule-based pipeline).
         transcript_provider: default provider used when ``process`` has no
             explicit transcript.
+        face_detector: optional ``FaceDetector``; when set, faces are detected
+            on sampled frames and passed to face-aware placement.
+        preset: ``PlatformPreset`` or its name; fills platform/resolution/
+            safe area/fps defaults (explicit arguments win).
+        safe_area: explicit safe area (overrides the preset's).
         ffmpeg: injected ``FFmpegVideoProcessor`` (tests inject a fake).
-        fps: caption frame rate (also the encode frame rate).
+        fps: caption frame rate (also the encode frame rate); preset/30 default.
         clear_color: RGBA background for caption frames (transparent by default).
     """
 
@@ -92,22 +98,33 @@ class CaptionVideoPipeline:
         ai_provider: AIProvider | str | None = None,
         transcript_provider: TranscriptProvider | None = None,
         face_detector: FaceDetector | None = None,
+        preset: PlatformPreset | str | None = None,
+        safe_area: SafeArea | None = None,
         ffmpeg: FFmpegVideoProcessor | None = None,
         compiler: Compiler | None = None,
         renderer: TimelineRenderer | None = None,
-        fps: int = 30,
+        fps: int | None = None,
         clear_color: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
+        resolved_preset = None
+        if preset is not None:
+            resolved_preset = (
+                preset if isinstance(preset, PlatformPreset) else platform_preset(preset)
+            )
+        # Explicit arguments win; the preset fills whatever is left unset.
+        self.platform = platform or (resolved_preset.name if resolved_preset else None)
+        self.resolution = resolution or (
+            resolved_preset.resolution if resolved_preset else None
+        )
+        self.safe_area = safe_area or (resolved_preset.safe_area if resolved_preset else None)
+        self.fps = fps or (resolved_preset.fps if resolved_preset else 30)
         self.theme = theme
-        self.platform = platform
-        self.resolution = resolution
         self.ai_provider = ai_provider
         self.transcript_provider = transcript_provider
         self.face_detector = face_detector
         self.ffmpeg = ffmpeg or FFmpegVideoProcessor()
         self.compiler = compiler or default_compiler()
         self.renderer = renderer or TimelineRenderer()
-        self.fps = fps
         self.clear_color = clear_color
 
     # -- helpers -------------------------------------------------------------
@@ -272,6 +289,7 @@ class CaptionVideoPipeline:
             transcript=transcript,
             theme=self.theme,
             platform=self.platform,
+            safe_area=self.safe_area,
             faces=list(faces or []),
             resolution=requested,
         )
