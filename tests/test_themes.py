@@ -109,6 +109,7 @@ class TestResolveTheme:
             "Avenir",
             "Helvetica Neue",
             "Helvetica",
+            "Mukta Mahee",
         ]
 
     def test_resolve_compiles_all_roles(self, font_manager):

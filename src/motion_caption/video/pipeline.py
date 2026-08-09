@@ -236,28 +236,40 @@ class CaptionVideoPipeline:
             timeline = self.compiler.compile(annotated)
 
             # 5. Stream frames to disk (never the whole sequence in memory).
+            #    When compositing onto footage, captions must tick at the
+            #    source frame rate so the overlay maps 1:1 to video frames.
             canvas = Canvas(width=timeline.resolution.width, height=timeline.resolution.height)
+            render_fps = int(round(metadata.fps)) if metadata.fps else self.fps
             render_end = max(timeline.end, metadata.duration)
             self.renderer.render_sequence_to_directory(
                 timeline,
                 canvas,
                 frames_dir,
-                fps=self.fps,
+                fps=render_fps,
                 clear_color=self.clear_color,
                 start=0.0,
                 end=render_end,
             )
             frames_rendered = _count_frames(frames_dir)
 
-            # 6. Encode frames → silent captioned video.
+            # 6. Composite captions over the original footage; only fall back
+            #    to a standalone encode when there is no video to overlay on.
             captioned = workspace / "captioned.mp4"
-            self.ffmpeg.render_frames_to_video(
-                frames_dir,
-                self.fps,
-                captioned,
-                width=canvas.width,
-                height=canvas.height,
-            )
+            if metadata.has_video:
+                self.ffmpeg.overlay_frames(
+                    input_path,
+                    frames_dir,
+                    render_fps,
+                    captioned,
+                )
+            else:
+                self.ffmpeg.render_frames_to_video(
+                    frames_dir,
+                    render_fps,
+                    captioned,
+                    width=canvas.width,
+                    height=canvas.height,
+                )
 
             # 7. Mux the original audio (full quality) onto the captioned video.
             if metadata.has_audio:
@@ -276,7 +288,7 @@ class CaptionVideoPipeline:
             llm_annotated=llm_annotated,
             theme=self.theme,
             details={
-                "fps": self.fps,
+                "fps": render_fps,
                 "duration": metadata.duration,
                 "has_audio": metadata.has_audio,
             },

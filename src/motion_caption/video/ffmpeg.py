@@ -370,6 +370,58 @@ class FFmpegVideoProcessor:
         )
         return target
 
+    def overlay_frames(
+        self,
+        video_path: str | Path,
+        frames_dir: str | Path,
+        fps: float,
+        output: str | Path,
+        *,
+        pattern: str = "%06d.png",
+        crf: int = 18,
+    ) -> Path:
+        """Composite an RGBA PNG sequence on top of a video (captions over footage).
+
+        The source video is the overlay's base and passes through untouched;
+        each transparent caption frame is composited at the matching timestamp
+        (``fps`` must equal the video's frame rate for a 1:1 mapping). This is
+        the production path for ``CaptionVideoPipeline`` — the original footage
+        is preserved instead of being replaced by the caption layer.
+        """
+        frames = Path(frames_dir)
+        if not frames.is_dir():
+            raise FFmpegError(
+                f"frames directory not found: {frames}",
+                hint="render the frame sequence before compositing",
+            )
+        target = Path(output)
+        self._run(
+            [
+                self._require_ffmpeg(),
+                "-y",
+                "-i",
+                str(video_path),
+                "-framerate",
+                f"{fps:g}",
+                "-i",
+                str(frames / pattern),
+                "-filter_complex",
+                "[1:v]format=rgba[cap];[0:v][cap]overlay=0:0",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                "-crf",
+                str(crf),
+                "-movflags",
+                "+faststart",
+                "-shortest",
+                str(target),
+            ],
+            check_file=Path(video_path),
+        )
+        return target
+
     # -- audio muxing --------------------------------------------------------
 
     def mux_audio(

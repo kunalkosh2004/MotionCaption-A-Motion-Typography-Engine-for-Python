@@ -27,6 +27,7 @@ class FakeFFmpeg:
         resolution: tuple[int, int] = (640, 360),
         duration: float = 1.0,
         has_audio: bool = True,
+        has_video: bool = True,
     ) -> None:
         self.calls: list[tuple] = []
         self.metadata = VideoMetadata(
@@ -36,8 +37,8 @@ class FakeFFmpeg:
             fps=30.0,
             duration=duration,
             has_audio=has_audio,
-            has_video=True,
-            video_codec="h264",
+            has_video=has_video,
+            video_codec="h264" if has_video else None,
             audio_codec="aac" if has_audio else None,
         )
 
@@ -57,6 +58,13 @@ class FakeFFmpeg:
 
     def render_frames_to_video(self, frames_dir, fps, output, **kwargs) -> Path:
         self.calls.append(("render_frames_to_video", str(frames_dir), fps, str(output)))
+        self.frames_encoded = len(list(Path(frames_dir).glob("*.png")))
+        target = Path(output)
+        target.write_bytes(b"captioned-mp4")
+        return target
+
+    def overlay_frames(self, video, frames_dir, fps, output, **kwargs) -> Path:
+        self.calls.append(("overlay_frames", str(video), str(frames_dir), fps, str(output)))
         self.frames_encoded = len(list(Path(frames_dir).glob("*.png")))
         target = Path(output)
         target.write_bytes(b"captioned-mp4")
@@ -128,11 +136,12 @@ def test_end_to_end_happy_path(fake_ffmpeg, compiler, tmp_path) -> None:
     assert not result.llm_annotated
     assert result.theme == "clean"
 
-    # Operation order: probe → extract_audio → encode → mux.
+    # Operation order: probe → extract_audio → composite over footage → mux.
     kinds = [call[0] for call in fake_ffmpeg.calls]
     assert kinds[0] == "probe"
     assert "extract_audio" in kinds
-    assert kinds.index("render_frames_to_video") < kinds.index("mux_audio")
+    assert kinds.index("overlay_frames") < kinds.index("mux_audio")
+    assert "render_frames_to_video" not in kinds
 
     # The compiler saw one request, resolution defaulted to the input size.
     assert len(compiler.requests) == 1
@@ -326,6 +335,23 @@ def test_no_audio_source_copies_video(fake_ffmpeg, tmp_path) -> None:
     assert output.exists()
     assert "mux_audio" not in [call[0] for call in silent.calls]
     assert result.metadata.has_audio is False
+
+
+def test_no_video_source_falls_back_to_standalone_encode(fake_ffmpeg, tmp_path) -> None:
+    """Defensive path: with no video stream, frames are encoded directly."""
+    input_video = tmp_path / "clip.mp4"
+    input_video.write_bytes(b"input")
+    silent = FakeFFmpeg(has_video=False)
+    pipeline = CaptionVideoPipeline(
+        transcript_provider=FakeTranscriptProvider("hello world"),
+        ffmpeg=silent,
+        fps=10,
+    )
+    output = tmp_path / "out.mp4"
+    pipeline.process(input_video, output)
+    kinds = [call[0] for call in silent.calls]
+    assert "overlay_frames" not in kinds
+    assert "render_frames_to_video" in kinds
 
 
 def test_workspace_is_cleaned_up(fake_ffmpeg, compiler, tmp_path) -> None:

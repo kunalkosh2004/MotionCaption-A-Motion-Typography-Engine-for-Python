@@ -162,6 +162,38 @@ def test_render_frames_missing_dir_raises(processor) -> None:
         )
 
 
+def test_overlay_frames_composites_captions_over_video(
+    processor, monkeypatch, tmp_path
+) -> None:
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"fake")
+    frames = tmp_path / "frames"
+    frames.mkdir()
+    (frames / "000000.png").write_bytes(b"x")
+    calls = _patch_run(monkeypatch)
+    out = processor.overlay_frames(video, frames, 25, tmp_path / "out.mp4")
+    command = calls[0]
+    assert command[0] == FAKE_FFMPEG
+    # Inputs: the original video first, then the caption PNG sequence at 25 fps.
+    assert command[command.index("-framerate") + 1] == "25"
+    assert command[command.index("-i") + 1] == str(video)
+    assert str(frames / "%06d.png") in command
+    # The filter graph keeps the footage and composites RGBA captions on top.
+    filter_arg = command[command.index("-filter_complex") + 1]
+    assert "overlay=0:0" in filter_arg
+    assert "[0:v]" in filter_arg and "[1:v]" in filter_arg
+    assert "libx264" in command and "yuv420p" in command and "-shortest" in command
+    assert command[-1] == str(tmp_path / "out.mp4")
+    assert out == tmp_path / "out.mp4"
+
+
+def test_overlay_frames_missing_dir_raises(processor, tmp_path) -> None:
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"fake")
+    with pytest.raises(FFmpegError, match="frames directory not found"):
+        processor.overlay_frames(video, "/no/frames/dir", 25, tmp_path / "out.mp4")
+
+
 def test_mux_audio_maps_video_and_optional_audio(processor, monkeypatch, tmp_path) -> None:
     video = tmp_path / "captioned.mp4"
     video.write_bytes(b"fake")

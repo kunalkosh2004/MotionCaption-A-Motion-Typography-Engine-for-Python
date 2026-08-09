@@ -43,6 +43,9 @@ _MUSIC_VIDEO = ThemeSpec(
         ("Avenir", 600),
         ("Helvetica Neue", 600),
         ("Helvetica", 600),
+        # Last-resort fallback for Gurmukhi (Punjabi) lyrics; per-word glyph
+        # coverage selects it only for characters the Latin stack cannot draw.
+        ("Mukta Mahee", 400),
     ),
     style={
         "size": "60px",
