@@ -12,5 +12,22 @@ from motion_caption.video.ffmpeg import (
     VideoMetadata,
     temporary_directory,
 )
+from motion_caption.video.pipeline import CaptionVideoPipeline, PipelineResult
+from motion_caption.video.transcript import (
+    FakeTranscriptProvider,
+    TranscriptProvider,
+    normalize_transcript,
+    validate_transcript,
+)
 
-__all__ = ["FFmpegVideoProcessor", "VideoMetadata", "temporary_directory"]
+__all__ = [
+    "CaptionVideoPipeline",
+    "FFmpegVideoProcessor",
+    "FakeTranscriptProvider",
+    "PipelineResult",
+    "TranscriptProvider",
+    "VideoMetadata",
+    "normalize_transcript",
+    "temporary_directory",
+    "validate_transcript",
+]

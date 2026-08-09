@@ -14,6 +14,7 @@ target ISA. Rendering is *sampling*, never per-frame authoring.
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
@@ -251,7 +252,11 @@ class TimelineRenderer:
         end: float | None = None,
         scale: float | None = None,
     ) -> list[Image.Image]:
-        """Render frames from ``start`` to ``end`` inclusive at ``fps``."""
+        """Render frames from ``start`` to ``end`` inclusive at ``fps``.
+
+        Prefer ``render_sequence_to_directory`` for long media: this variant
+        materializes every frame in memory.
+        """
         if start is None:
             start = timeline.start
         if end is None:
@@ -265,3 +270,41 @@ class TimelineRenderer:
             )
             t += step
         return frames
+
+    def render_sequence_to_directory(
+        self,
+        timeline: SubtitleTimeline,
+        canvas: Canvas,
+        out_dir: str | Path,
+        *,
+        fps: int = 30,
+        clear_color: tuple[int, int, int, int] = (0, 0, 0, 0),
+        start: float | None = None,
+        end: float | None = None,
+        scale: float | None = None,
+        pattern: str = "%06d.png",
+    ) -> Path:
+        """Render frames from ``start`` to ``end`` at ``fps``, writing each to disk.
+
+        Streaming variant: at most one frame exists in memory at a time, so
+        hour-long videos never blow the heap. Frames are written as
+        ``000000.png, 000001.png, ...`` (the pattern the FFmpeg bridge's
+        ``render_frames_to_video`` consumes). Returns ``out_dir``.
+        """
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        if start is None:
+            start = timeline.start
+        if end is None:
+            end = timeline.end
+        step = 1.0 / fps
+        t = start
+        index = 0
+        while t <= end + 1e-9:
+            frame = self.render_frame(
+                timeline, t, canvas, clear_color=clear_color, scale=scale
+            )
+            frame.save(out / (pattern % index))
+            t += step
+            index += 1
+        return out
