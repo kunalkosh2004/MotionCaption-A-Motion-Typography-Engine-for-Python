@@ -54,7 +54,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     caption.add_argument("input", help="input video file")
     caption.add_argument("-o", "--output", help="output video (default: <input>_captioned.mp4)")
-    caption.add_argument("--theme", default="clean", help="theme name (default: clean)")
+    caption.add_argument(
+        "--theme",
+        default=None,
+        help="theme name (default: clean; omit for auto — the transcript may "
+        "recommend one)",
+    )
     caption.add_argument(
         "--preset",
         "--platform",
@@ -72,6 +77,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     caption.add_argument(
         "--transcript", help="skip transcription; read a Transcript JSON file instead"
+    )
+    caption.add_argument(
+        "--transcript-provider",
+        "--asr",
+        dest="transcript_provider",
+        choices=("gemini", "whisperx"),
+        default=None,
+        help="transcribe the audio when no --transcript is given "
+        "(gemini: cloud, needs GEMINI_API_KEY + the 'ai' extra; "
+        "whisperx: local, needs the 'whisper' extra)",
     )
     caption.add_argument("--fps", type=int, default=None, help="frame rate (default 30)")
     caption.add_argument(
@@ -138,6 +153,21 @@ def _parse_resolution(value: str | None) -> tuple[int, int] | None:
         raise ValueError(f"invalid resolution {value!r}; use WxH (e.g. 1080x1920)") from exc
 
 
+def _transcript_provider(name: str | None):
+    """Instantiate a transcript provider by name (None → no ASR)."""
+    if name is None:
+        return None
+    if name == "gemini":
+        from motion_caption.video import GeminiTranscriptProvider
+
+        return GeminiTranscriptProvider()
+    if name == "whisperx":
+        from motion_caption.video import WhisperXTranscriptProvider
+
+        return WhisperXTranscriptProvider()
+    raise ValueError(f"unknown transcript provider: {name!r}")
+
+
 def _cmd_caption(args: argparse.Namespace) -> None:
     transcript = load_transcript(args.transcript) if args.transcript else None
     pipeline = CaptionVideoPipeline(
@@ -145,6 +175,7 @@ def _cmd_caption(args: argparse.Namespace) -> None:
         preset=args.preset,
         resolution=_parse_resolution(args.resolution),
         ai_provider=args.ai,
+        transcript_provider=_transcript_provider(args.transcript_provider),
         fps=args.fps,
     )
     result = pipeline.process(
@@ -157,6 +188,7 @@ def _cmd_caption(args: argparse.Namespace) -> None:
         f"({result.event_count} events, {result.word_count} words, "
         f"{result.frames_rendered} frames"
         + (", AI-annotated" if result.llm_annotated else "")
+        + f", theme: {result.theme or 'clean'}"
         + ")"
     )
 

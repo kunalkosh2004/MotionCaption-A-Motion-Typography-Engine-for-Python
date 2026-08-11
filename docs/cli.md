@@ -22,9 +22,10 @@ motion-caption caption input.mp4 \
 
 | Flag | Meaning |
 |---|---|
-| `--theme` | theme name (default `clean`) |
+| `--theme` | theme name (default `clean`); omit for auto — the transcript may recommend one (e.g. Gemini picks it from the lyrics' vibe) |
 | `--preset` (alias `--platform`) | `youtube_shorts`, `tiktok`, `instagram_reels`, `youtube_landscape`, `square` |
 | `--ai PROVIDER` | annotate first with `gemini` or `openai` (needs an API key); omit for rule-based |
+| `--transcript-provider PROVIDER` | transcribe the audio with `gemini` (needs `GEMINI_API_KEY`) or `whisperx` (needs the `whisper` extra); omit to use a `--transcript` file or rule-based placeholders |
 | `--transcript FILE` | skip transcription; read a `Transcript` JSON file |
 | `--fps N` | frame rate (default 30) |
 | `--resolution WxH` | output resolution (default: input video size) |

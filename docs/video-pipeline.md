@@ -35,7 +35,7 @@ from motion_caption.video import CaptionVideoPipeline
 pipeline = CaptionVideoPipeline(
     theme="music_video",
     preset="youtube_shorts",          # 1080x1920 + safe area + 30 fps
-    transcript_provider=WhisperXTranscriptProvider(),  # optional
+    transcript_provider=WhisperXTranscriptProvider(),  # optional (or GeminiTranscriptProvider / FakeTranscriptProvider)
     ai_provider="gemini",             # optional; needs GEMINI_API_KEY
 )
 result = pipeline.process("input.mp4", "output.mp4")
@@ -55,14 +55,17 @@ result = pipeline.process("input.mp4", "output.mp4",
                           transcript=load_transcript("transcript.json"))
 ```
 
+Theme resolution order: explicit `theme=` (or `--theme`) wins, then
+`transcript.theme` (a provider recommendation, e.g. Gemini's), then `clean`.
+
 ## Pieces
 
 | Component | Module | Responsibility |
 |---|---|---|
 | `FFmpegVideoProcessor` | `motion_caption.video.ffmpeg` | probe / extract audio / extract frame / encode PNGs / mux / burn ASS; arg-array `subprocess`, timeouts, `FFMPEG_PATH` env |
 | `TranscriptProvider` (protocol) | `motion_caption.video.transcript` | any object with `transcribe(audio_path) -> Transcript` |
-| `FakeTranscriptProvider` | `motion_caption.video.transcript` | deterministic word timings for tests/demos |
-| `WhisperXTranscriptProvider` | `motion_caption.video.whisperx` | word-level ASR behind the `whisper` extra (lazy import) |
+| `FakeTranscriptProvider` | `motion_caption.video.transcript` | deterministic word timings for tests/demos || `WhisperXTranscriptProvider` | `motion_caption.video.whisperx` | word-level ASR behind the `whisper` extra (lazy import) |
+| `GeminiTranscriptProvider` | `motion_caption.video.gemini` | cloud transcription behind the `ai` extra (lazy import); `GEMINI_API_KEY` / `GEMINI_MODEL` |
 | `FaceDetector` (protocol) / `OpenCVFaceDetector` | `motion_caption.video.faces` | per-frame boxes; `detect_faces_for_video()` samples frames and unions boxes |
 | `PlatformPreset` | `motion_caption.video.presets` | shorts / tiktok / reels / landscape / square bundles |
 | `CaptionVideoPipeline` | `motion_caption.video.pipeline` | orchestration; returns `PipelineResult` |

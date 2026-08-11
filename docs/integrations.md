@@ -42,6 +42,47 @@ transcript = provider.transcribe("audio.wav")
   `TranscriptionError` with a hint.
 - `whisperx` pulls in torch — hence the optional extra.
 
+## Gemini (optional transcription)
+
+Cloud transcription behind the `ai` extra (same dependency as Gemini
+annotation — no torch needed):
+
+```bash
+pip install -e ".[ai]"        # from a local checkout
+pip install "motion-caption[ai]"  # once published
+echo 'GEMINI_API_KEY=your-key' > .env   # .env is gitignored
+set -a; source .env; set +a
+```
+
+```python
+from motion_caption.video import GeminiTranscriptProvider
+
+provider = GeminiTranscriptProvider(model="gemini-2.5-flash")
+transcript = provider.transcribe("audio.wav")
+```
+
+- `GEMINI_API_KEY` env var supplies the key; `GEMINI_MODEL` sets the default
+  model (constructor argument wins over the env var).
+- The adapter uploads the file to Gemini, waits for it to become active, asks
+  for JSON, and normalizes output (sorts, clamps overlaps, drops degenerate
+  words) just like the WhisperX adapter. A missing install or failed
+  transcription raises `TranscriptionError` with a hint.
+- Audio longer than `chunk_seconds` (default 45s) is automatically split into
+  overlapping clips that are transcribed separately and stitched back together,
+  because Gemini's timestamps drift and fragment on multi-minute files. This
+  keeps captions in sync all the way to the end of long videos. Tune with
+  `chunk_seconds=`/`overlap_seconds=` on the constructor, or pass
+  `chunk_seconds=None` to force a single call. Note: chunking multiplies API
+  calls (a 4-minute video needs ~6), which can exhaust free-tier daily quotas
+  faster.
+- The prompt also asks Gemini to recommend a caption **theme** from the
+  built-ins (`clean`, `music_video`, `cinematic`, `sport`, `news`) based on
+  the lyrics' mood/genre/energy. The recommendation lands on
+  `transcript.theme` (unknown names are dropped) and the pipeline honours it
+  when you don't pass `--theme` — the compiler falls back to `clean`.
+- For a full pipeline, pass the provider straight to `CaptionVideoPipeline` or
+  `--transcript-provider gemini` on the CLI.
+
 ## Gemini (optional annotation)
 
 ```bash
@@ -99,10 +140,11 @@ avoidance zone. Any object with `detect(frame) -> list[Box]` works.
 
 | Variable | Used by | Purpose |
 |---|---|---|
-| `GEMINI_API_KEY` | `motion_caption.ai` | Gemini annotation |
+| `GEMINI_API_KEY` | `motion_caption.ai`, `motion_caption.video.gemini` | Gemini annotation and transcription |
 | `OPENAI_API_KEY` | `motion_caption.ai` | OpenAI annotation |
 | `FFMPEG_PATH` / `FFPROBE_PATH` | `motion_caption.video.ffmpeg` | explicit binary paths |
 | `WHISPER_MODEL` | `motion_caption.video.whisperx` | default WhisperX model |
+| `GEMINI_MODEL` | `motion_caption.video.gemini` | default Gemini transcription model |
 
 Keys never appear in logs; the compiler never loads `.env`.
 

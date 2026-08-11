@@ -44,10 +44,17 @@ class WordTimestamp(BaseModel):
 
 
 class Transcript(BaseModel):
-    """The full word-timed transcript (the semantic input to the engine)."""
+    """The full word-timed transcript (the semantic input to the engine).
+
+    ``theme`` is an optional *recommendation*: a provider (e.g. Gemini) can
+    suggest a built-in theme name based on the content's vibe. It is metadata
+    only — the compiler never depends on it, and callers/pipeline decide
+    whether to honour it (an explicit theme always wins).
+    """
 
     language: str = "en"
     words: list[WordTimestamp] = Field(default_factory=list)
+    theme: str | None = None
 
     @property
     def duration(self) -> float:

@@ -26,7 +26,7 @@ from typing import Any
 
 from motion_caption.errors import TranscriptionError
 from motion_caption.models import Transcript, WordTimestamp
-from motion_caption.video.transcript import normalize_transcript
+from motion_caption.video.transcript import normalize_transcript, split_segment_words
 
 # Models are cached per (name, device, compute_type) — loading is expensive
 # and the adapter should not pay it per file.
@@ -148,7 +148,7 @@ class WhisperXTranscriptProvider:
                 start, end = segment.get("start"), segment.get("end")
                 if segment_text and start is not None and end is not None:
                     per_segment.append(
-                        _split_segment_words(
+                        split_segment_words(
                             [
                                 WordTimestamp(
                                     text=segment_text,
@@ -159,25 +159,3 @@ class WhisperXTranscriptProvider:
                         )
                     )
         return [word for group in per_segment for word in group]
-
-
-def _split_segment_words(segments: list[WordTimestamp]) -> list[WordTimestamp]:
-    """Turn per-segment timestamps into evenly split per-word timestamps."""
-    result: list[WordTimestamp] = []
-    for segment in segments:
-        tokens = segment.text.split()
-        if not tokens:
-            continue
-        span = segment.end - segment.start
-        step = span / len(tokens)
-        for index, token in enumerate(tokens):
-            start = segment.start + step * index
-            result.append(
-                WordTimestamp(
-                    text=token,
-                    start=round(start, 6),
-                    end=round(start + step, 6),
-                    confidence=segment.confidence,
-                )
-            )
-    return result

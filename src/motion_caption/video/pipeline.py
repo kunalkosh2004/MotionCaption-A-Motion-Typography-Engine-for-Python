@@ -264,6 +264,8 @@ class CaptionVideoPipeline:
                     frames_dir,
                     render_fps,
                     captioned,
+                    width=canvas.width,
+                    height=canvas.height,
                     timeout=encode_timeout,
                 )
             else:
@@ -291,7 +293,7 @@ class CaptionVideoPipeline:
             word_count=len(timeline.words),
             frames_rendered=frames_rendered,
             llm_annotated=llm_annotated,
-            theme=self.theme,
+            theme=timeline.styles[0].name if timeline.styles else self.theme or resolved.theme,
             details={
                 "fps": render_fps,
                 "duration": metadata.duration,
@@ -311,7 +313,7 @@ class CaptionVideoPipeline:
             requested = f"{source_resolution[0]}x{source_resolution[1]}"
         return CaptionRequest(
             transcript=transcript,
-            theme=self.theme,
+            theme=self.theme or transcript.theme,
             platform=self.platform,
             safe_area=self.safe_area,
             faces=list(faces or []),

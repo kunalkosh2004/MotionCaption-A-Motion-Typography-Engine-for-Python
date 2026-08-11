@@ -288,6 +288,102 @@ class FFmpegVideoProcessor:
         )
         return target
 
+    def duration(self, media_path: str | Path) -> float:
+        """Duration in seconds of any decodable media (audio or video).
+
+        Uses ffprobe's container-level duration, which is reliable for the
+        WAV files the transcript providers receive.
+        """
+        source = Path(media_path)
+        if not source.is_file():
+            raise InvalidVideoError(
+                f"input file does not exist: {source}",
+                hint="check the path is correct and the file is readable",
+            )
+        result = self._run(
+            [
+                self._require_ffprobe(),
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=nw=1:nk=1",
+                str(source),
+            ]
+        )
+        try:
+            value = float((result.stdout or "").strip())
+        except (TypeError, ValueError) as exc:
+            raise FFmpegError(
+                f"could not read the duration of {source}",
+                hint="the file may be corrupt or an unsupported container",
+            ) from exc
+        return value
+
+    def split_audio(
+        self,
+        audio_path: str | Path,
+        output_dir: str | Path,
+        *,
+        chunk_seconds: float = 45.0,
+        overlap_seconds: float = 3.0,
+        sample_rate: int = 16000,
+        channels: int = 1,
+    ) -> list[Path]:
+        """Split an audio file into overlapping mono WAV chunks.
+
+        Long audio is transcribed more reliably in short pieces, so cloud
+        providers split clips before transcription. Chunks start every
+        ``chunk_seconds - overlap_seconds`` seconds and each covers
+        ``chunk_seconds``, so a caller can discard a chunk's first
+        ``overlap_seconds`` of words and concatenate the rest without gaps or
+        duplicates. Returns the chunk paths in order (never empty).
+        """
+        source = Path(audio_path)
+        total = self.duration(source)
+        overlap = max(0.0, min(overlap_seconds, chunk_seconds * 0.5))
+        step = chunk_seconds - overlap
+        if total <= 0.0 or step <= 0.0:
+            raise FFmpegError(
+                f"cannot split {source}: duration={total:g}s, step={step:g}s",
+                hint="check the audio is decodable and chunk_seconds > overlap_seconds",
+            )
+        starts: list[float] = []
+        position = 0.0
+        while position < total - 1e-9:
+            starts.append(position)
+            position += step
+        target_dir = Path(output_dir)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        chunks: list[Path] = []
+        for index, start in enumerate(starts):
+            end = min(start + chunk_seconds, total)
+            target = target_dir / f"chunk_{index:03d}.wav"
+            self._run(
+                [
+                    self._require_ffmpeg(),
+                    "-y",
+                    "-ss",
+                    f"{start:g}",
+                    "-to",
+                    f"{end:g}",
+                    "-i",
+                    str(source),
+                    "-vn",
+                    "-acodec",
+                    "pcm_s16le",
+                    "-ar",
+                    str(sample_rate),
+                    "-ac",
+                    str(channels),
+                    str(target),
+                ],
+                check_file=source,
+            )
+            chunks.append(target)
+        return chunks
+
     # -- frame extraction ----------------------------------------------------
 
     def extract_frame(
@@ -382,14 +478,20 @@ class FFmpegVideoProcessor:
         pattern: str = "%06d.png",
         crf: int = 18,
         timeout: float | None = None,
+        width: int | None = None,
+        height: int | None = None,
     ) -> Path:
         """Composite an RGBA PNG sequence on top of a video (captions over footage).
 
-        The source video is the overlay's base and passes through untouched;
-        each transparent caption frame is composited at the matching timestamp
-        (``fps`` must equal the video's frame rate for a 1:1 mapping). This is
-        the production path for ``CaptionVideoPipeline`` — the original footage
-        is preserved instead of being replaced by the caption layer.
+        The source video is the overlay's base and passes through (mostly)
+        untouched; each transparent caption frame is composited at the matching
+        timestamp (``fps`` must equal the video's frame rate for a 1:1
+        mapping). When ``width``/``height`` are given, the source video is
+        first scaled to fit and letterboxed into that canvas, so a portrait
+        preset (e.g. instagram reels) produces a portrait video from
+        landscape footage. This is the production path for
+        ``CaptionVideoPipeline`` — the original footage is preserved instead
+        of being replaced by the caption layer.
         """
         frames = Path(frames_dir)
         if not frames.is_dir():
@@ -398,6 +500,16 @@ class FFmpegVideoProcessor:
                 hint="render the frame sequence before compositing",
             )
         target = Path(output)
+        if width is not None and height is not None:
+            # Fit the footage into the caption canvas, then overlay on top.
+            # The intermediate pad snaps to even pixels so yuv420p stays valid.
+            base_filter = (
+                f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                f"pad=ceil(iw/2)*2:ceil(ih/2)*2:-1:-1,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2[base]"
+            )
+        else:
+            base_filter = "[0:v]null[base]"
         self._run(
             [
                 self._require_ffmpeg(),
@@ -409,7 +521,7 @@ class FFmpegVideoProcessor:
                 "-i",
                 str(frames / pattern),
                 "-filter_complex",
-                "[1:v]format=rgba[cap];[0:v][cap]overlay=0:0",
+                f"{base_filter};[1:v]format=rgba[cap];[base][cap]overlay=0:0",
                 "-c:v",
                 "libx264",
                 "-pix_fmt",

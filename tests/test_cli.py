@@ -186,6 +186,37 @@ def test_caption_command_wires_pipeline(monkeypatch, tmp_path, capsys) -> None:
     assert "captioned" in capsys.readouterr().out
 
 
+def test_caption_theme_defaults_to_auto(monkeypatch, tmp_path, capsys) -> None:
+    from motion_caption.video.pipeline import PipelineResult
+
+    captured: dict = {}
+
+    class _FakePipeline:
+        def __init__(self, **kwargs) -> None:
+            captured["kwargs"] = kwargs
+
+        def process(self, input_video, output_video=None, **kwargs):
+            return PipelineResult(
+                output_video=Path("out.mp4"),
+                timeline=None,  # type: ignore[arg-type]
+                transcript=None,  # type: ignore[arg-type]
+                metadata=FAKE_METADATA,
+                event_count=1,
+                word_count=2,
+                frames_rendered=30,
+                llm_annotated=False,
+                theme="sport",
+            )
+
+    monkeypatch.setattr(cli, "CaptionVideoPipeline", _FakePipeline)
+    video = tmp_path / "in.mp4"
+    video.write_bytes(b"x")
+    code = _run(["caption", str(video)], capsys)
+    assert code == 0
+    assert captured["kwargs"]["theme"] is None
+    assert "theme: sport" in capsys.readouterr().out
+
+
 def test_caption_command_with_transcript_file(tmp_path, capsys, monkeypatch) -> None:
     from motion_caption.video.pipeline import PipelineResult
 
@@ -219,6 +250,37 @@ def test_caption_command_with_transcript_file(tmp_path, capsys, monkeypatch) -> 
         capsys,
     )
     assert code == 0
+
+
+def test_caption_command_with_transcript_provider(monkeypatch, tmp_path, capsys) -> None:
+    from motion_caption.video.gemini import GeminiTranscriptProvider
+    from motion_caption.video.pipeline import PipelineResult
+
+    captured: dict = {}
+
+    class _FakePipeline:
+        def __init__(self, **kwargs) -> None:
+            captured["provider"] = kwargs.get("transcript_provider")
+
+        def process(self, input_video, output_video=None, **kwargs):
+            return PipelineResult(
+                output_video=Path("out.mp4"),
+                timeline=None,  # type: ignore[arg-type]
+                transcript=None,  # type: ignore[arg-type]
+                metadata=FAKE_METADATA,
+                event_count=1,
+                word_count=2,
+                frames_rendered=30,
+                llm_annotated=False,
+                theme="clean",
+            )
+
+    monkeypatch.setattr(cli, "CaptionVideoPipeline", _FakePipeline)
+    video = tmp_path / "in.mp4"
+    video.write_bytes(b"x")
+    code = _run(["caption", str(video), "--transcript-provider", "gemini"], capsys)
+    assert code == 0
+    assert isinstance(captured["provider"], GeminiTranscriptProvider)
 
 
 def test_caption_ai_error_prints_hint(monkeypatch, tmp_path, capsys) -> None:

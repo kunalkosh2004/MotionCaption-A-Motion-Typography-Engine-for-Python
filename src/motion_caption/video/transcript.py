@@ -21,6 +21,7 @@ engines (WhisperX, whisper.cpp, cloud APIs) all want a path on disk.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol
 
@@ -67,7 +68,34 @@ def normalize_transcript(transcript: Transcript) -> Transcript:
         end = min(word.end, next_start)
         if end > word.start:
             sanitized.append(word.model_copy(update={"end": end}))
-    return Transcript(language=transcript.language, words=sanitized)
+    return Transcript(language=transcript.language, words=sanitized, theme=transcript.theme)
+
+
+def split_segment_words(segments: Sequence[WordTimestamp]) -> list[WordTimestamp]:
+    """Turn per-segment timestamps into evenly split per-word timestamps.
+
+    Cloud ASR engines that report utterance/segment boundaries but not
+    word-level timing (e.g. Gemini) still need word granularity for the
+    caption engine. Each segment's tokens are spread evenly across its span,
+    preserving order and the segment's confidence.
+    """
+    result: list[WordTimestamp] = []
+    for segment in segments:
+        tokens = segment.text.split()
+        if not tokens or segment.end <= segment.start:
+            continue
+        step = (segment.end - segment.start) / len(tokens)
+        for index, token in enumerate(tokens):
+            start = segment.start + step * index
+            result.append(
+                WordTimestamp(
+                    text=token,
+                    start=round(start, 6),
+                    end=round(start + step, 6),
+                    confidence=segment.confidence,
+                )
+            )
+    return result
 
 
 def validate_transcript(transcript: Transcript) -> None:
@@ -119,6 +147,7 @@ class FakeTranscriptProvider:
         per_word: float = 0.45,
         language: str = "en",
         confidence: float = 1.0,
+        theme: str | None = None,
     ) -> None:
         if per_word <= 0:
             raise ValueError(f"per_word must be positive, got {per_word}")
@@ -126,6 +155,7 @@ class FakeTranscriptProvider:
         self.per_word = per_word
         self.language = language
         self.confidence = confidence
+        self.theme = theme
 
     def transcribe(self, audio_path: str | Path) -> Transcript:
         del audio_path  # deterministic: output does not depend on the file
@@ -140,4 +170,4 @@ class FakeTranscriptProvider:
                     confidence=self.confidence,
                 )
             )
-        return Transcript(language=self.language, words=words)
+        return Transcript(language=self.language, words=words, theme=self.theme)

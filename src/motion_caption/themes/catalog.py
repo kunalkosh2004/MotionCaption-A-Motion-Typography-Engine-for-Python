@@ -17,11 +17,20 @@ def _stack(*families: tuple[str, int]) -> list[dict[str, object]]:
     return [{"family": family, "weight": weight} for family, weight in families]
 
 
+# Last-resort fallbacks for Indic lyrics (Devanagari + Gurmukhi);
+# per-word glyph coverage selects them only for characters the primary
+# stack cannot draw, so Latin styling is never affected.
+_INDIC_FALLBACK: tuple[tuple[str, int], ...] = (
+    ("Kohinoor Devanagari", 400),
+    ("Mukta Mahee", 400),
+)
+
+
 _CLEAN = ThemeSpec(
     name="clean",
     display_name="Clean",
     description="Neutral, modern subtitles with a soft shadow.",
-    font_stack=_stack(("Helvetica", 400), ("Arial", 400)),
+    font_stack=_stack(("Helvetica", 400), ("Arial", 400), *_INDIC_FALLBACK),
     style={
         "size": "56px",
         "fill": {"color": "#FFFFFF"},
@@ -43,11 +52,7 @@ _MUSIC_VIDEO = ThemeSpec(
         ("Avenir", 600),
         ("Helvetica Neue", 600),
         ("Helvetica", 600),
-        # Last-resort fallbacks for Indic lyrics (Devanagari + Gurmukhi);
-        # per-word glyph coverage selects them only for characters the Latin
-        # stack cannot draw, so Latin styling is never affected.
-        ("Kohinoor Devanagari", 400),
-        ("Mukta Mahee", 400),
+        *_INDIC_FALLBACK,
     ),
     style={
         "size": "60px",
@@ -80,6 +85,7 @@ _CINEMATIC = ThemeSpec(
         ("Georgia", 400),
         ("Times New Roman", 400),
         ("Times", 400),
+        *_INDIC_FALLBACK,
     ),
     style={
         "size": "58px",
@@ -103,7 +109,9 @@ _SPORT = ThemeSpec(
     name="sport",
     display_name="Sport",
     description="Heavy uppercase captions with a hard outline.",
-    font_stack=_stack(("Impact", 400), ("Arial Black", 400), ("Helvetica", 800)),
+    font_stack=_stack(
+        ("Impact", 400), ("Arial Black", 400), ("Helvetica", 800), *_INDIC_FALLBACK
+    ),
     style={
         "size": "64px",
         "letter_spacing": "1px",
@@ -127,7 +135,7 @@ _NEWS = ThemeSpec(
     name="news",
     display_name="News",
     description="Editorial captions on a rounded background box.",
-    font_stack=_stack(("Helvetica", 500), ("Arial", 500)),
+    font_stack=_stack(("Helvetica", 500), ("Arial", 500), *_INDIC_FALLBACK),
     style={
         "size": "48px",
         "fill": {"color": "#FFFFFF"},

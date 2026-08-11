@@ -64,7 +64,9 @@ class FakeFFmpeg:
         return target
 
     def overlay_frames(self, video, frames_dir, fps, output, **kwargs) -> Path:
-        self.calls.append(("overlay_frames", str(video), str(frames_dir), fps, str(output)))
+        self.calls.append(
+            ("overlay_frames", str(video), str(frames_dir), fps, str(output), dict(kwargs))
+        )
         self.frames_encoded = len(list(Path(frames_dir).glob("*.png")))
         target = Path(output)
         target.write_bytes(b"captioned-mp4")
@@ -155,6 +157,81 @@ def test_end_to_end_happy_path(fake_ffmpeg, compiler, tmp_path) -> None:
     # Frames were streamed to disk (never held in memory): the encoder saw
     # exactly as many PNGs as the pipeline claims to have rendered.
     assert fake_ffmpeg.frames_encoded == result.frames_rendered > 0
+
+
+def test_preset_fits_landscape_footage_into_portrait_canvas(
+    fake_ffmpeg, compiler, tmp_path
+) -> None:
+    fake_ffmpeg.metadata = VideoMetadata(
+        path=Path("input.mp4"),
+        width=1440,
+        height=1080,
+        fps=30.0,
+        duration=1.0,
+        has_audio=True,
+        has_video=True,
+    )
+    input_video = tmp_path / "input.mp4"
+    input_video.write_bytes(b"x")
+    output = tmp_path / "captioned.mp4"
+
+    pipeline = CaptionVideoPipeline(
+        theme="sport",
+        preset="instagram_reels",
+        transcript_provider=FakeTranscriptProvider("hello world"),
+        ffmpeg=fake_ffmpeg,
+        compiler=compiler,
+    )
+    pipeline.process(input_video, output)
+
+    overlay = [c for c in fake_ffmpeg.calls if c[0] == "overlay_frames"]
+    assert overlay
+    kwargs = overlay[0][5]
+    assert kwargs["width"] == 1080
+    assert kwargs["height"] == 1920
+    assert compiler.requests[0].platform == "instagram_reels"
+    assert (
+        compiler.requests[0].resolution.width,
+        compiler.requests[0].resolution.height,
+    ) == (1080, 1920)
+
+
+def test_transcript_recommended_theme_used_when_not_explicit(
+    fake_ffmpeg, compiler, tmp_path
+) -> None:
+    input_video = tmp_path / "clip.mp4"
+    input_video.write_bytes(b"input")
+    output = tmp_path / "captioned.mp4"
+
+    pipeline = CaptionVideoPipeline(
+        transcript_provider=FakeTranscriptProvider("hello world", theme="sport"),
+        ffmpeg=fake_ffmpeg,
+        compiler=compiler,
+    )
+    result = pipeline.process(input_video, output)
+
+    assert compiler.requests[0].theme == "sport"
+    assert result.theme == "sport"
+    assert result.transcript.theme == "sport"
+
+
+def test_explicit_theme_wins_over_transcript_recommendation(
+    fake_ffmpeg, compiler, tmp_path
+) -> None:
+    input_video = tmp_path / "clip.mp4"
+    input_video.write_bytes(b"input")
+    output = tmp_path / "captioned.mp4"
+
+    pipeline = CaptionVideoPipeline(
+        theme="music_video",
+        transcript_provider=FakeTranscriptProvider("hello world", theme="sport"),
+        ffmpeg=fake_ffmpeg,
+        compiler=compiler,
+    )
+    result = pipeline.process(input_video, output)
+
+    assert compiler.requests[0].theme == "music_video"
+    assert result.theme == "music_video"
 
 
 def test_input_missing_raises_invalid_video(tmp_path) -> None:

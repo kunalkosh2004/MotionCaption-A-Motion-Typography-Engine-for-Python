@@ -120,6 +120,27 @@ class TestResolveTheme:
             assert fn(0.0) == pytest.approx(0.0, abs=1e-6)
             assert fn(1.0) == pytest.approx(1.0, abs=1e-2)
 
+    def test_sport_stack_includes_indic_fallbacks(self, font_manager):
+        resolved = resolve_theme(load_theme("sport"), font_manager=font_manager)
+        assert [ref.family for ref in resolved.base_style.font.fonts][-2:] == [
+            "Kohinoor Devanagari",
+            "Mukta Mahee",
+        ]
+
+    def test_gurmukhi_word_resolves_via_fallback(self, font_manager):
+        from motion_caption.models.units import Resolution, ResolutionContext
+        from motion_caption.typography.measure import TextMeasurer
+
+        resolved = resolve_theme(load_theme("sport"), font_manager=font_manager)
+        block = TextMeasurer(font_manager).measure(
+            "ਤਾਈ",
+            resolved.base_style,
+            ResolutionContext(canvas=Resolution(width=1080, height=1920)),
+        )
+        word = block.lines[0].words[0]
+        assert word.text == "ਤਾਈ"
+        assert "Mukta" in word.font_path
+
     def test_resolve_keeps_emphasis(self, font_manager):
         resolved = resolve_theme(load_theme("music_video"), font_manager=font_manager)
         high = resolved.emphasis[EmphasisMode.HIGH]

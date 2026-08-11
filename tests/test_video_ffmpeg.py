@@ -136,6 +136,78 @@ def test_extract_audio_builds_wav_command(processor, monkeypatch, tmp_path) -> N
     assert out == video.with_suffix(".wav")
 
 
+def test_duration_reads_ffprobe_output(processor, monkeypatch, tmp_path) -> None:
+    audio = tmp_path / "audio.wav"
+    audio.write_bytes(b"fake")
+    calls = _patch_run(monkeypatch, stdout="123.45\n")
+    assert processor.duration(audio) == 123.45
+    assert calls[0][0] == FAKE_FFPROBE
+    assert "-show_entries" in calls[0]
+    assert "format=duration" in calls[0]
+
+
+def test_duration_missing_file_raises(processor) -> None:
+    with pytest.raises(InvalidVideoError, match="does not exist"):
+        processor.duration("/no/audio.wav")
+
+
+def test_duration_unparseable_output_raises(processor, monkeypatch, tmp_path) -> None:
+    audio = tmp_path / "audio.wav"
+    audio.write_bytes(b"fake")
+    _patch_run(monkeypatch, stdout="nope\n")
+    with pytest.raises(FFmpegError, match="could not read the duration"):
+        processor.duration(audio)
+
+
+def test_duration_probe_failure_raises(processor, monkeypatch, tmp_path) -> None:
+    audio = tmp_path / "audio.wav"
+    audio.write_bytes(b"fake")
+    _patch_run(monkeypatch, stderr="Invalid data", returncode=1)
+    with pytest.raises(FFmpegError, match="exit 1"):
+        processor.duration(audio)
+
+
+def test_split_audio_builds_overlapping_chunks(processor, monkeypatch, tmp_path) -> None:
+    audio = tmp_path / "audio.wav"
+    audio.write_bytes(b"fake")
+    calls = _patch_run(monkeypatch, stdout="100.0\n")
+    chunks = processor.split_audio(
+        audio, tmp_path / "chunks", chunk_seconds=45.0, overlap_seconds=3.0
+    )
+    # One ffprobe duration call, then ffmpeg trim calls for each chunk.
+    assert calls[0][0] == FAKE_FFPROBE
+    trims = calls[1:]
+    assert len(trims) == 3  # starts 0, 42, 84
+    assert [c[c.index("-ss") + 1] for c in trims] == ["0", "42", "84"]
+    assert [c[c.index("-to") + 1] for c in trims] == ["45", "87", "100"]
+    assert [c[-1] for c in trims] == [
+        str(tmp_path / "chunks" / f"chunk_{i:03d}.wav") for i in range(3)
+    ]
+    assert all(c[0] == FAKE_FFMPEG for c in trims)
+    assert chunks == [tmp_path / "chunks" / f"chunk_{i:03d}.wav" for i in range(3)]
+
+
+def test_split_audio_overlap_is_clamped(processor, monkeypatch, tmp_path) -> None:
+    audio = tmp_path / "audio.wav"
+    audio.write_bytes(b"fake")
+    calls = _patch_run(monkeypatch, stdout="100.0\n")
+    processor.split_audio(audio, tmp_path / "chunks", chunk_seconds=10.0, overlap_seconds=50.0)
+    # overlap clamped to 5s (half the chunk) -> step 5 -> starts 0, 5, 10, ... 95.
+    trims = calls[1:]
+    assert len(trims) == 20
+    assert [c[c.index("-ss") + 1] for c in trims[:3]] == ["0", "5", "10"]
+    assert [c[c.index("-to") + 1] for c in trims[:3]] == ["10", "15", "20"]
+
+
+def test_split_audio_invalid_step_raises(processor, monkeypatch, tmp_path) -> None:
+    audio = tmp_path / "audio.wav"
+    audio.write_bytes(b"fake")
+    _patch_run(monkeypatch, stdout="100.0\n")
+    with pytest.raises(FFmpegError, match="cannot split"):
+        processor.split_audio(audio, tmp_path / "chunks", chunk_seconds=0.0)
+
+
+
 def test_render_frames_to_video_builds_encoder_command(
     processor, monkeypatch, tmp_path
 ) -> None:
@@ -185,6 +257,21 @@ def test_overlay_frames_composites_captions_over_video(
     assert "libx264" in command and "yuv420p" in command and "-shortest" in command
     assert command[-1] == str(tmp_path / "out.mp4")
     assert out == tmp_path / "out.mp4"
+
+
+def test_overlay_frames_fits_footage_into_canvas(processor, monkeypatch, tmp_path) -> None:
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"fake")
+    frames = tmp_path / "frames"
+    frames.mkdir()
+    (frames / "000000.png").write_bytes(b"x")
+    calls = _patch_run(monkeypatch)
+    processor.overlay_frames(video, frames, 25, tmp_path / "out.mp4", width=1080, height=1920)
+    filter_arg = calls[0][calls[0].index("-filter_complex") + 1]
+    assert "scale=1080:1920:force_original_aspect_ratio=decrease" in filter_arg
+    assert "pad=ceil(iw/2)*2:ceil(ih/2)*2:-1:-1" in filter_arg
+    assert "pad=1080:1920:(ow-iw)/2:(oh-ih)/2[base]" in filter_arg
+    assert "[base][cap]overlay=0:0" in filter_arg
 
 
 def test_overlay_frames_missing_dir_raises(processor, tmp_path) -> None:

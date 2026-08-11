@@ -51,7 +51,7 @@ Requires Python 3.12+ and FFmpeg for the video pipeline. Optional extras:
 
 | Extra | Adds |
 |---|---|
-| `ai` | Gemini / OpenAI annotation SDKs |
+| `ai` | Gemini / OpenAI annotation SDKs; Gemini transcription |
 | `whisper` | WhisperX word-level transcription (heavy: torch) |
 | `video` | OpenCV face detection for the video pipeline |
 | `all` | everything above |
@@ -67,8 +67,13 @@ motion-caption caption input.mp4 \
     --theme music_video \
     --preset youtube_shorts \
     --ai gemini \
+    --transcript-provider gemini \   # or whisperx; omit for offline mode
     -o output.mp4
 ```
+
+Omit `--theme` and the transcript provider can pick one for you — with Gemini
+transcription the model recommends a theme from the lyrics' vibe (fallback:
+`clean`).
 
 Deterministic offline mode (no AI, no ASR):
 

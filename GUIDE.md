@@ -499,8 +499,8 @@ pip install -e ".[dev]"     # development
 pip install motion-caption   # once published
 ```
 
-Requires Python 3.12+. Optional extras: `ai` (OpenAI / Gemini providers),
-`whisper` (WhisperX transcript import).
+Requires Python 3.12+. Optional extras: `ai` (OpenAI / Gemini providers, plus
+Gemini transcription), `whisper` (WhisperX transcript import).
 
 ### Importing Top-Level API
 

@@ -17,6 +17,7 @@ from motion_caption.video.ffmpeg import (
     VideoMetadata,
     temporary_directory,
 )
+from motion_caption.video.gemini import GeminiTranscriptProvider
 from motion_caption.video.pipeline import CaptionVideoPipeline, PipelineResult
 from motion_caption.video.presets import (
     PLATFORM_PRESETS,
@@ -28,24 +29,29 @@ from motion_caption.video.transcript import (
     FakeTranscriptProvider,
     TranscriptProvider,
     normalize_transcript,
+    split_segment_words,
     validate_transcript,
 )
+from motion_caption.video.whisperx import WhisperXTranscriptProvider
 
 __all__ = [
     "CaptionVideoPipeline",
     "FFmpegVideoProcessor",
     "FaceDetector",
     "FakeTranscriptProvider",
+    "GeminiTranscriptProvider",
     "OpenCVFaceDetector",
     "PLATFORM_PRESETS",
     "PipelineResult",
     "PlatformPreset",
     "TranscriptProvider",
     "VideoMetadata",
+    "WhisperXTranscriptProvider",
     "available_presets",
     "detect_faces_for_video",
     "normalize_transcript",
     "platform_preset",
+    "split_segment_words",
     "temporary_directory",
     "validate_transcript",
 ]
