@@ -8,12 +8,19 @@ bundled Roboto and compared as raw PNG bytes; regenerate after intentional
 visual changes with:
 
     MC_UPDATE_SNAPSHOTS=1 .venv/bin/python -m pytest tests/test_golden.py -q
+
+FreeType glyph metrics and rasterization differ per operating system, so the
+byte-exact comparison is the macOS reference (where snapshots are
+regenerated). The pixel-probe tests below still assert real content on every
+platform.
 """
 
 from __future__ import annotations
 
 import io
+import sys
 
+import pytest
 from PIL import Image
 
 import pinned
@@ -33,6 +40,10 @@ def _frame(compiler: Compiler, t: float) -> Image.Image:
     return TimelineRenderer().render_frame(timeline, t, CANVAS)
 
 
+@pytest.mark.skipif(
+    sys.platform != "darwin",
+    reason="golden PNG is a byte-exact macOS rasterization; regenerate on macOS",
+)
 def test_golden_frame_snapshot(pinned_compiler: Compiler) -> None:
     """The full frame at mid-idle is byte-identical to the committed PNG."""
     frame = _frame(pinned_compiler, SAMPLE_T)

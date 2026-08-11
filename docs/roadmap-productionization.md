@@ -37,7 +37,11 @@ working:
    snapshot embedded the absolute repo path (`/Users/.../MotionCaption...`), so it
    could only pass on the machine that generated it. Now the repo root is
    normalized to a `<REPO_ROOT>` placeholder before comparison — byte-stable on
-   any checkout. (`tests/test_snapshots.py`, `tests/snapshots/timeline/golden.json`)
+   any checkout on the same OS. (Note: the snapshots embed measured glyph
+   advance widths and rasterized pixels, which differ across OSes because of
+   FreeType metrics; the byte-exact golden comparisons run on the macOS
+   reference platform and are skipped elsewhere.) (`tests/test_snapshots.py`,
+   `tests/snapshots/timeline/golden.json`)
 2. **Unused core dependency.** `opencv-python-headless>=4.8` is declared in
    `[project.dependencies]` but **nothing imports `cv2`**. It belongs behind an
    optional extra (moved in the video/faces milestone) so the deterministic

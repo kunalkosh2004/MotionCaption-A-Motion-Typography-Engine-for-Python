@@ -28,7 +28,9 @@ SubtitleTimeline          ← canonical IR, single source of truth
 Backends never re-measure, re-layout or re-animate: everything they need is
 already resolved in the IR. Deterministic by construction — identical input
 → identical output bytes, which is why golden frames and timeline snapshots
-are checked into the test suite.
+are checked into the test suite (macOS reference; FreeType glyph metrics and
+rasterization differ per OS, so the byte-exact golden comparisons run on
+macOS while the behavioral tests run everywhere).
 
 **How it works:** the single consolidated reference is
 [`GUIDE.md`](GUIDE.md) — architecture, compiler pipeline, IR, every
