@@ -23,14 +23,22 @@ def _stack(*families: tuple[str, int]) -> list[dict[str, object]]:
 _INDIC_FALLBACK: tuple[tuple[str, int], ...] = (
     ("Kohinoor Devanagari", 400),
     ("Mukta Mahee", 400),
+    ("Noto Sans Devanagari", 400),
+    ("Noto Sans Gurmukhi", 400),
 )
+
+# Portable Latin last resort so themes resolve on any OS: DejaVu Sans ships
+# with virtually every Linux install (and fonts-noto-core on CI). It only
+# ever activates when the styled families above are absent, so macOS/Windows
+# rendering is unchanged.
+_LATIN_FALLBACK: tuple[tuple[str, int], ...] = (("DejaVu Sans", 400),)
 
 
 _CLEAN = ThemeSpec(
     name="clean",
     display_name="Clean",
     description="Neutral, modern subtitles with a soft shadow.",
-    font_stack=_stack(("Helvetica", 400), ("Arial", 400), *_INDIC_FALLBACK),
+    font_stack=_stack(("Helvetica", 400), ("Arial", 400), *_LATIN_FALLBACK, *_INDIC_FALLBACK),
     style={
         "size": "56px",
         "fill": {"color": "#FFFFFF"},
@@ -52,6 +60,7 @@ _MUSIC_VIDEO = ThemeSpec(
         ("Avenir", 600),
         ("Helvetica Neue", 600),
         ("Helvetica", 600),
+        *_LATIN_FALLBACK,
         *_INDIC_FALLBACK,
     ),
     style={
@@ -85,6 +94,7 @@ _CINEMATIC = ThemeSpec(
         ("Georgia", 400),
         ("Times New Roman", 400),
         ("Times", 400),
+        *_LATIN_FALLBACK,
         *_INDIC_FALLBACK,
     ),
     style={
@@ -110,7 +120,8 @@ _SPORT = ThemeSpec(
     display_name="Sport",
     description="Heavy uppercase captions with a hard outline.",
     font_stack=_stack(
-        ("Impact", 400), ("Arial Black", 400), ("Helvetica", 800), *_INDIC_FALLBACK
+        ("Impact", 400), ("Arial Black", 400), ("Helvetica", 800), *_LATIN_FALLBACK,
+        *_INDIC_FALLBACK,
     ),
     style={
         "size": "64px",
@@ -135,7 +146,7 @@ _NEWS = ThemeSpec(
     name="news",
     display_name="News",
     description="Editorial captions on a rounded background box.",
-    font_stack=_stack(("Helvetica", 500), ("Arial", 500), *_INDIC_FALLBACK),
+    font_stack=_stack(("Helvetica", 500), ("Arial", 500), *_LATIN_FALLBACK, *_INDIC_FALLBACK),
     style={
         "size": "48px",
         "fill": {"color": "#FFFFFF"},

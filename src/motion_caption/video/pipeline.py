@@ -34,6 +34,7 @@ from motion_caption.errors import (
     AIProviderError,
     FFmpegError,
     InvalidTranscriptError,
+    InvalidVideoError,
     MotionCaptionError,
 )
 from motion_caption.ir.request import CaptionRequest
@@ -198,7 +199,13 @@ class CaptionVideoPipeline:
         input_path = Path(input_video)
         output_path = Path(output_video) if output_video else self._default_output(input_path)
 
-        # 1. Validate + inspect the input (fail fast: no ffmpeg, no point rendering).
+        # 1. Validate + inspect the input (fail fast: no input, no point probing;
+        #    no ffmpeg, no point rendering).
+        if not input_path.is_file():
+            raise InvalidVideoError(
+                f"input video does not exist: {input_path}",
+                hint="check the path before running the pipeline",
+            )
         if not self.ffmpeg.available():
             raise FFmpegError(
                 "ffmpeg/ffprobe not available",

@@ -109,8 +109,11 @@ class TestResolveTheme:
             "Avenir",
             "Helvetica Neue",
             "Helvetica",
+            "DejaVu Sans",
             "Kohinoor Devanagari",
             "Mukta Mahee",
+            "Noto Sans Devanagari",
+            "Noto Sans Gurmukhi",
         ]
 
     def test_resolve_compiles_all_roles(self, font_manager):
@@ -120,11 +123,17 @@ class TestResolveTheme:
             assert fn(0.0) == pytest.approx(0.0, abs=1e-6)
             assert fn(1.0) == pytest.approx(1.0, abs=1e-2)
 
-    def test_sport_stack_includes_indic_fallbacks(self, font_manager):
+    def test_sport_stack_ends_with_portable_fallbacks(self, font_manager):
         resolved = resolve_theme(load_theme("sport"), font_manager=font_manager)
-        assert [ref.family for ref in resolved.base_style.font.fonts][-2:] == [
+        assert [ref.family for ref in resolved.base_style.font.fonts] == [
+            "Impact",
+            "Arial Black",
+            "Helvetica",
+            "DejaVu Sans",
             "Kohinoor Devanagari",
             "Mukta Mahee",
+            "Noto Sans Devanagari",
+            "Noto Sans Gurmukhi",
         ]
 
     def test_gurmukhi_word_resolves_via_fallback(self, font_manager):
@@ -132,14 +141,20 @@ class TestResolveTheme:
         from motion_caption.typography.measure import TextMeasurer
 
         resolved = resolve_theme(load_theme("sport"), font_manager=font_manager)
-        block = TextMeasurer(font_manager).measure(
+        word = TextMeasurer(font_manager).measure(
             "ਤਾਈ",
             resolved.base_style,
             ResolutionContext(canvas=Resolution(width=1080, height=1920)),
-        )
-        word = block.lines[0].words[0]
+        ).lines[0].words[0]
         assert word.text == "ਤਾਈ"
-        assert "Mukta" in word.font_path
+        # The measured face must actually cover the Gurmukhi glyphs — either a
+        # dedicated Indic fallback (Mukta/Noto) or a broad last-resort font.
+        chosen = next(
+            f
+            for f in resolved.fonts
+            if str(f.path) == word.font_path and f.index == word.font_index
+        )
+        assert all(font_manager.glyph_supported(chosen, char) for char in "ਤਾਈ")
 
     def test_resolve_keeps_emphasis(self, font_manager):
         resolved = resolve_theme(load_theme("music_video"), font_manager=font_manager)
