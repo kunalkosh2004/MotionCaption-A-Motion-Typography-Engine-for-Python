@@ -25,7 +25,12 @@ from motion_caption.ir.typography import (
 )
 from motion_caption.models.units import ResolutionContext
 from motion_caption.themes.spec import EmphasisAppearance, ResolvedTheme
-from motion_caption.typography.fonts import FontFile, FontManager, FontRef
+from motion_caption.typography.fonts import (
+    FontFile,
+    FontManager,
+    FontRef,
+    font_resolution_diagnostic,
+)
 from motion_caption.typography.measure import MeasuredWord
 
 
@@ -55,10 +60,7 @@ def _resolved_font(face: FontFile) -> ResolvedFont:
 def resolve_typography(theme: ResolvedTheme, ctx: ResolutionContext) -> ResolvedTypography:
     """Resolve a resolved theme's base style into design-px typography."""
     if not theme.fonts:
-        raise ValueError(
-            "theme resolved to no fonts; check the theme's font stack "
-            f"(stack={theme.spec.font_stack!r})"
-        )
+        raise ValueError(font_resolution_diagnostic(theme.spec.font_stack, []))
     style = theme.base_style
     font_size = style.size.resolve(ctx)
     text_ctx = ctx.model_copy(update={"font_size": font_size})

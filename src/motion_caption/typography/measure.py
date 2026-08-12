@@ -16,7 +16,12 @@ from pydantic import BaseModel
 
 from motion_caption.models.geometry import Box
 from motion_caption.models.units import Length, ResolutionContext
-from motion_caption.typography.fonts import FontFile, FontManager, default_font_manager
+from motion_caption.typography.fonts import (
+    FontFile,
+    FontManager,
+    default_font_manager,
+    font_resolution_diagnostic,
+)
 from motion_caption.typography.style import TextStyle
 
 
@@ -106,7 +111,13 @@ def _wrap_words(
         for face in files:
             if all(manager.glyph_supported(face, char) for char in word):
                 return face
-        return files[0]
+        # No single face covers every character: use the face that covers the
+        # most glyphs so a word is never needlessly rendered with a font that
+        # lacks its script (which would draw .notdef boxes).
+        return max(
+            files,
+            key=lambda face: sum(manager.glyph_supported(face, char) for char in word),
+        )
 
     space_width = manager.text_width(files[0], size, " ")
     gap = space_width + word_spacing
@@ -168,10 +179,7 @@ class TextMeasurer:
 
         files = self.fonts.resolve_stack(style.font)
         if not files:
-            raise ValueError(
-                "no font could be resolved for style "
-                f"{style.font!r}; check the theme's font stack"
-            )
+            raise ValueError(font_resolution_diagnostic(style.font, []))
 
         size = round(style.size.resolve(ctx))
         if size <= 0:

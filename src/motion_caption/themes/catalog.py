@@ -28,10 +28,14 @@ _INDIC_FALLBACK: tuple[tuple[str, int], ...] = (
 )
 
 # Portable Latin last resort so themes resolve on any OS: DejaVu Sans ships
-# with virtually every Linux install (and fonts-noto-core on CI). It only
-# ever activates when the styled families above are absent, so macOS/Windows
-# rendering is unchanged.
-_LATIN_FALLBACK: tuple[tuple[str, int], ...] = (("DejaVu Sans", 400),)
+# with most Linux installs (and fonts-noto-core on CI). ``Noto Sans`` is the
+# second-chance Latin fallback: it ships in every runtime via the bundled
+# ``motion_caption/assets/fonts`` copy, so a Latin-capable face always
+# resolves *before* the Indic fallbacks — even in a bare Docker image.
+_LATIN_FALLBACK: tuple[tuple[str, int], ...] = (
+    ("DejaVu Sans", 400),
+    ("Noto Sans", 400),
+)
 
 
 _CLEAN = ThemeSpec(

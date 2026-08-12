@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "motion-caption"
-version = "0.1.2"
+version = "0.1.3"
 description = "Motion Typography Engine for Python — deterministic, professional animated subtitles for AI video editors."
 readme = "README.md"
 license = { text = "MIT" }
@@ -58,6 +58,7 @@ Repository = "https://github.com/kunalkosh2004/MotionCaption-A-Motion-Typography
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/motion_caption"]
+include = ["src/motion_caption/assets/fonts/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

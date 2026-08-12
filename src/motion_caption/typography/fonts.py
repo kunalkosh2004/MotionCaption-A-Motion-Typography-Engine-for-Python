@@ -27,26 +27,43 @@ logging.getLogger("fontTools.ttLib").setLevel(logging.ERROR)
 
 _FONT_SUFFIXES = {".ttf", ".otf", ".ttc"}
 
+# Bundled fonts ship inside the package so caption text renders readable on
+# every runtime — including minimal Linux/Docker images with no system fonts.
+# See ``assets/fonts/README.md`` for source and license (SIL OFL 1.1).
+_BUNDLED_FONT_DIR = Path(__file__).resolve().parent.parent / "assets" / "fonts"
+
+
+def bundled_font_directories() -> list[Path]:
+    """Directories holding the fonts bundled inside this package."""
+    return [_BUNDLED_FONT_DIR]
+
 
 def default_font_directories() -> list[Path]:
-    """Platform-appropriate system font directories."""
+    """Platform-appropriate system font directories, then the bundled fonts.
+
+    System fonts are scanned first so a developer's installed fonts keep
+    their look; the bundled Unicode-capable fonts are the guaranteed last
+    resort so a font always resolves even in a bare container.
+    """
     home = Path.home()
     if sys.platform == "darwin":
-        return [
+        dirs = [
             Path("/System/Library/Fonts"),
             Path("/System/Library/Fonts/Supplemental"),
             Path("/Library/Fonts"),
             home / "Library" / "Fonts",
         ]
-    if os.name == "nt":
+    elif os.name == "nt":
         windir = Path(os.environ.get("WINDIR", "C:\\Windows"))
-        return [windir / "Fonts", home / "AppData" / "Local" / "Microsoft" / "Windows" / "Fonts"]
-    return [
-        Path("/usr/share/fonts"),
-        Path("/usr/local/share/fonts"),
-        home / ".fonts",
-        home / ".local" / "share" / "fonts",
-    ]
+        dirs = [windir / "Fonts", home / "AppData" / "Local" / "Microsoft" / "Windows" / "Fonts"]
+    else:
+        dirs = [
+            Path("/usr/share/fonts"),
+            Path("/usr/local/share/fonts"),
+            home / ".fonts",
+            home / ".local" / "share" / "fonts",
+        ]
+    return [*dirs, *bundled_font_directories()]
 
 
 # Mapping from style keywords found in font names to CSS weight numbers.
@@ -363,3 +380,35 @@ def default_font_manager() -> FontManager:
     if _DEFAULT_MANAGER is None:
         _DEFAULT_MANAGER = FontManager()
     return _DEFAULT_MANAGER
+
+
+def font_resolution_diagnostic(stack: FontStack, resolved: Sequence[FontFile]) -> str:
+    """A human-readable report for a failed font resolution.
+
+    Produces the actionable error surfaced when a theme resolves to no
+    usable fonts: the requested stack, what (if anything) resolved, the
+    directories searched, the bundled fallback, and the runtime platform.
+    """
+    requested = " -> ".join(
+        f"{ref.family} ({ref.weight})" + (f" @ {ref.path}" if ref.path else "")
+        for ref in stack.fonts
+    )
+    resolved_lines = "\n".join(
+        f"  - {face.family} {face.subfamily} @ {face.path}" for face in resolved
+    )
+    searched = "\n".join(f"  - {directory}" for directory in default_font_directories())
+    bundled = [str(p) for p in bundled_font_directories() if p.is_dir()]
+
+    return (
+        "Caption font could not be loaded.\n"
+        f"Requested font: {requested or '(empty stack)'}\n"
+        f"Resolved path: {resolved_lines or '  (none — no face resolved)'}\n"
+        "Environment: "
+        f"platform={sys.platform or 'unknown'}, python={sys.version.split()[0]}\n"
+        "Searched directories:\n" + searched + "\n"
+        "Available fallback: "
+        f"{bundled[0] if bundled else 'none bundled'}"
+        " (Noto Sans — SIL OFL 1.1)\n"
+        "Fix: ensure the requested families are installed, or install the "
+        "motion-caption package which bundles a Unicode-capable fallback font."
+    )
